@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Вход | CyberSquare</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/theme.css">
+</head>
+<body class="bg-light">
+
+<header class="cs-header">
+  <div class="container py-3 d-flex align-items-center justify-content-between">
+    <div class="cs-logo">CyberSquare</div>
+    <div id="burger-menu" class="burger-menu ms-3"><span></span><span></span><span></span></div>
+  </div>
+  <nav id="nav-links" class="nav-links">
+    <div class="container pb-3">
+      <ul id="nav-ul" class="nav nav-pills flex-column flex-md-row gap-2"></ul>
+    </div>
+  </nav>
+</header>
+
+<main class="container py-5" style="max-width:520px;">
+  <div class="card cs-card p-4">
+    <h1 class="h4 mb-3">Вход</h1>
+
+    <form id="loginForm" class="d-flex flex-column gap-3">
+      <input class="form-control" type="email" id="email" placeholder="Email" required>
+      <input class="form-control" type="password" id="password" placeholder="Пароль" required>
+      <button class="btn btn-primary" type="submit">Войти</button>
+    </form>
+
+    <div class="text-muted mt-3">
+      Нет аккаунта? <a href="register.html">Регистрация</a>
+    </div>
+  </div>
+</main>
+
+<script src="/js/nav.js" defer></script>
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  // Пока можно оставить заглушку, но если API уже есть — заработает
+  const body = {
+    email: document.getElementById('email').value.trim(),
+    password: document.getElementById('password').value
+  };
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+
+    const json = await res.json();
+
+    if (!res.ok) {
+      alert(json.error || 'Ошибка входа');
+      return;
+    }
+
+    localStorage.setItem('user_id', json.user_id);
+    localStorage.setItem('full_name', json.full_name);
+    localStorage.setItem('role', json.role);
+
+    location.href = (json.role === 'admin') ? 'admin.html' : 'cabinet.html';
+  } catch (err) {
+    alert('API входа пока не подключён (это нормально).');
+  }
+});
+</script>
+</body>
+</html>

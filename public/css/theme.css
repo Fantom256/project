@@ -1,0 +1,44 @@
+:root{
+  --cs-primary:#0d6efd;
+  --cs-dark:#111827;
+  --cs-light:#f3f4f6;
+}
+
+/* общий фон и типографика */
+body{ background:var(--cs-light); color:var(--cs-dark); }
+
+/* шапка */
+.cs-header{
+  background:#fff;
+  border-bottom:1px solid #e5e7eb;
+  position:sticky; top:0; z-index:1000;
+}
+.cs-logo{ font-weight:800; letter-spacing:.3px; }
+
+/* бургер всегда виден */
+.burger-menu{
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  width:30px;
+  height:21px;
+  cursor:pointer;
+}
+.burger-menu span{
+  display:block;
+  height:3px;
+  width:100%;
+  background:#6b7280;
+  border-radius:3px;
+}
+
+/* меню */
+.nav-links{ display:none; }
+.nav-links.show{ display:block; }
+
+/* карточки */
+.cs-card{
+  border:0;
+  border-radius:16px;
+  box-shadow:0 10px 25px rgba(0,0,0,.06);
+}
