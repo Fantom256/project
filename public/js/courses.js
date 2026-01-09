@@ -60,24 +60,32 @@ async function loadCourses() {
   }
 }
 
-// пока auth можно подключить позже — но “крючок” уже есть
 async function enroll(courseId) {
-  const userId = localStorage.getItem('user_id');
-  if (!userId) {
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    localStorage.setItem('redirect_after_login', location.href); // ✅ вернём обратно
     alert('Нужно войти, чтобы записаться.');
     location.href = 'login.html';
     return;
   }
 
-  const res = await fetch('/api/enroll', {
+  const res = await fetch('/api/enrollments', {
     method: 'POST',
-    headers: { 'Content-Type':'application/json' },
-    body: JSON.stringify({ user_id: Number(userId), course_id: courseId })
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    },
+    body: JSON.stringify({ course_id: courseId })
   });
 
   const json = await res.json();
-  if (res.ok && json.success) alert('Вы записались! № ' + json.consultation_id);
-  else alert(json.error || 'Ошибка записи');
+  if (res.ok) {
+    alert('Запись успешна!');
+  } else {
+    alert(json.error || 'Ошибка записи');
+  }
 }
+
 
 document.addEventListener('DOMContentLoaded', loadCourses);

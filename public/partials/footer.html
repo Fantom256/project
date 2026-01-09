@@ -1,0 +1,42 @@
+<footer class="cs-footer mt-5">
+  <div class="container py-4">
+    <div class="row g-4">
+      <div class="col-12 col-md-5">
+        <div class="cs-logo mb-2">CyberSquare</div>
+        <div class="text-muted">
+          Платформа по обучению программированию. Курсы, практика, отзывы и личный кабинет.
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="fw-semibold mb-2">Навигация</div>
+        <ul class="list-unstyled m-0 d-flex flex-column gap-1">
+          <li><a class="cs-footer-link" href="index.html">Главная</a></li>
+          <li><a class="cs-footer-link" href="about.html">О нас</a></li>
+          <li><a class="cs-footer-link" href="courses.html">Курсы</a></li>
+          <li><a class="cs-footer-link" href="reviews.html">Отзывы</a></li>
+        </ul>
+      </div>
+
+      <div class="col-6 col-md-4">
+        <div class="fw-semibold mb-2">Контакты</div>
+        <ul class="list-unstyled m-0 d-flex flex-column gap-1">
+          <li class="text-muted">Email: contact@cybersquare.ru</li>
+          <li class="text-muted">Тел: +8-800-555-35-35</li>
+          <li class="text-muted">Ростов-на-Дону (RU)</li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="my-4">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+      <div class="text-muted">© <span id="csYear"></span> CyberSquare. Все права защищены.</div>
+      
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('csYear').textContent = new Date().getFullYear();
+</script>

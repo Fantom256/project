@@ -42,3 +42,46 @@ body{ background:var(--cs-light); color:var(--cs-dark); }
   border-radius:16px;
   box-shadow:0 10px 25px rgba(0,0,0,.06);
 }
+
+/* ===== Footer (Light) ===== */
+.cs-footer{
+  background:#ffffff;
+  color:var(--cs-dark, #111827);
+  border-top:1px solid #e5e7eb;
+}
+
+.cs-footer .cs-logo{
+  font-weight:800;
+  letter-spacing:.3px;
+}
+
+.cs-footer .text-muted{
+  color:#6b7280 !important; /* серый, но читаемый */
+}
+
+.cs-footer-link{
+  color:var(--cs-primary, #0d6efd);
+  text-decoration:none;
+}
+
+.cs-footer-link:hover{
+  text-decoration:underline;
+}
+
+.cs-footer hr{
+  border-color:#e5e7eb;
+}
+
+/* About icons */
+.cs-icon{
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex: 0 0 44px;
+}
+.cs-icon i{ font-size: 18px; }
+

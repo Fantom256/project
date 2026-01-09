@@ -42,7 +42,6 @@
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  // Пока можно оставить заглушку, но если API уже есть — заработает
   const body = {
     email: document.getElementById('email').value.trim(),
     password: document.getElementById('password').value
@@ -51,26 +50,43 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   try {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      headers: { 'Content-Type':'application/json' },
       body: JSON.stringify(body)
     });
 
-    const json = await res.json();
+    const json = await res.json().catch(() => ({}));
 
     if (!res.ok) {
       alert(json.error || 'Ошибка входа');
       return;
     }
 
-    localStorage.setItem('user_id', json.user_id);
-    localStorage.setItem('full_name', json.full_name);
-    localStorage.setItem('role', json.role);
+    // ✅ 1) сохраняем токен (если сервер его отдаёт)
+    const token = json.token || json.access_token || json.accessToken;
+    if (token) localStorage.setItem('token', token);
 
+    // ✅ 2) сохраняем данные пользователя
+    if (json.user_id != null) localStorage.setItem('user_id', String(json.user_id));
+    if (json.full_name != null) localStorage.setItem('full_name', json.full_name);
+    if (json.role != null) localStorage.setItem('role', json.role);
+
+    // ✅ 3) возвращаем на страницу, откуда пришли (если записали redirect_after_login)
+    const back = localStorage.getItem('redirect_after_login');
+    if (back) {
+      localStorage.removeItem('redirect_after_login');
+      location.href = back;
+      return;
+    }
+
+    // ✅ 4) иначе — стандартный переход
     location.href = (json.role === 'admin') ? 'admin.html' : 'cabinet.html';
+
   } catch (err) {
-    alert('API входа пока не подключён (это нормально).');
+    alert('Ошибка сети/сервера: ' + err.message);
   }
 });
 </script>
+
 </body>
 </html>
+

@@ -3,7 +3,6 @@ import db from '../config/db.js';
 
 const router = Router();
 
-/* 1) Все курсы */
 router.get('/', async (req, res) => {
   try {
     const result = await db.query(`
@@ -19,7 +18,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-/* 2) ✅ Курсы по категориям (для фронта) */
+
 router.get('/by-category', async (req, res) => {
   try {
     const result = await db.query(`

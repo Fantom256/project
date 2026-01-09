@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Отзывы | CyberSquare</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/theme.css">
+</head>
+
+<body class="bg-light">
+
+<header class="cs-header">
+  <div class="container py-3 d-flex align-items-center justify-content-between">
+    <div class="cs-logo">CyberSquare</div>
+    <div id="burger-menu" class="burger-menu ms-3" aria-label="menu">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+  <nav id="nav-links" class="nav-links">
+    <div class="container pb-3">
+      <ul id="nav-ul" class="nav nav-pills flex-column flex-md-row gap-2"></ul>
+    </div>
+  </nav>
+</header>
+
+<main class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 m-0">Отзывы пользователей</h1>
+    <button class="btn btn-outline-secondary" onclick="location.href='index.html'">На главную</button>
+  </div>
+
+  <!-- Форма (только авторизованный) -->
+  <div id="addReviewCard" class="card cs-card p-4 mb-4" style="display:none;">
+    <h2 class="h5 mb-3">Оставить отзыв</h2>
+
+    <form id="reviewForm" class="row g-3" style="max-width: 820px;">
+      <div class="col-12 col-md-6">
+        <label class="form-label">Курс</label>
+        <select id="reviewCourse" class="form-select" required></select>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label">Оценка</label>
+        <select id="reviewRating" class="form-select" required>
+          <option value="5">★★★★★ (5)</option>
+          <option value="4">★★★★☆ (4)</option>
+          <option value="3">★★★☆☆ (3)</option>
+          <option value="2">★★☆☆☆ (2)</option>
+          <option value="1">★☆☆☆☆ (1)</option>
+        </select>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Комментарий</label>
+        <textarea id="reviewComment" class="form-control" rows="3" placeholder="Ваш отзыв (необязательно)"></textarea>
+      </div>
+
+      <div class="col-12 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Отправить</button>
+        <a class="btn btn-outline-primary" href="login.html">Войти</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Если не авторизован -->
+  <div id="needLoginCard" class="card cs-card p-4 mb-4" style="display:none;">
+    <div class="d-flex flex-column flex-md-row align-items-start justify-content-between gap-3">
+      <div>
+        <h2 class="h5 mb-1">Хотите оставить отзыв?</h2>
+        <div class="text-muted">Для этого нужно войти или зарегистрироваться.</div>
+      </div>
+      <div class="d-flex gap-2">
+        <a class="btn btn-primary" href="login.html">Войти</a>
+        <a class="btn btn-outline-primary" href="register.html">Регистрация</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Список отзывов -->
+  <div id="reviewsContainer" class="d-flex flex-column gap-3"></div>
+</main>
+
+<script src="/js/nav.js" defer></script>
+<div id="footer-holder"></div>
+<script src="/js/footer.js" defer></script>
+
+<script>
+  const userId = localStorage.getItem('user_id');
+
+  async function loadCourseSelect() {
+    const res = await fetch('/api/courses');
+    const courses = await res.json();
+    document.getElementById('reviewCourse').innerHTML =
+      courses.map(c => `<option value="${c.course_id}">${c.title}</option>`).join('');
+  }
+
+  function stars(n){ return '★'.repeat(n) + '☆'.repeat(5-n); }
+
+  async function loadReviews() {
+    const res = await fetch('/api/reviews');
+    const data = await res.json();
+
+    const wrap = document.getElementById('reviewsContainer');
+    wrap.innerHTML = '';
+
+    if (!data.length) {
+      wrap.innerHTML = `<div class="text-muted">Пока нет отзывов.</div>`;
+      return;
+    }
+
+    data.forEach(r => {
+      wrap.insertAdjacentHTML('beforeend', `
+        <div class="card cs-card p-3">
+          <div class="d-flex justify-content-between flex-wrap gap-2">
+            <div class="fw-semibold">${r.course_title}</div>
+            <div class="text-warning" style="letter-spacing:.5px;">${stars(r.rating)}</div>
+          </div>
+          ${r.comment ? `<div class="mt-2">${r.comment}</div>` : ''}
+          <div class="text-muted mt-2 small">
+            Автор: ${r.full_name} • ${new Date(r.created_at).toLocaleDateString()}
+          </div>
+        </div>
+      `);
+    });
+  }
+
+  async function submitReview(e) {
+    e.preventDefault();
+
+    const body = {
+      course_id: +document.getElementById('reviewCourse').value,
+      rating: +document.getElementById('reviewRating').value,
+      comment: document.getElementById('reviewComment').value.trim()
+    };
+
+    const res = await fetch('/api/reviews', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-id': userId // временно: пока без JWT middleware
+      },
+      body: JSON.stringify(body)
+    });
+
+    const json = await res.json();
+    if (!res.ok) {
+      alert(json.error || 'Ошибка');
+      return;
+    }
+
+    alert('Отзыв отправлен!');
+    e.target.reset();
+    loadReviews();
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    // показать/скрыть форму
+    if (userId) {
+      document.getElementById('addReviewCard').style.display = 'block';
+      document.getElementById('needLoginCard').style.display = 'none';
+      await loadCourseSelect();
+      document.getElementById('reviewForm').addEventListener('submit', submitReview);
+    } else {
+      document.getElementById('addReviewCard').style.display = 'none';
+      document.getElementById('needLoginCard').style.display = 'block';
+    }
+
+    loadReviews();
+  });
+</script>
+
+</body>
+</html>

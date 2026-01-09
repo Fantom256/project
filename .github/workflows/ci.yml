@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "master", "develop"]
+  pull_request:
+    branches: ["main", "master", "develop"]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Если тестов пока нет — оставь, но сделай чтобы не падало:
+      # Либо добавь тесты и npm test, либо временно замени на echo.
+      - name: Run tests
+        run: npm test
+
+      - name: Build Docker image (smoke)
+        run: docker build -t cybersquare-app:${{ github.sha }} .

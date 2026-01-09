@@ -1,0 +1,23 @@
+services:
+  app:
+    build: .
+    container_name: cybersquare_app
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      JWT_SECRET: "change_me_please"
+
+      # подключаемся к PostgreSQL на твоём ПК (Windows)
+      DB_HOST: host.docker.internal
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: 182838
+      DB_NAME: postgres
+
+      # если твой db.js использует PG* переменные — на всякий случай
+      PGHOST: host.docker.internal
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: 182838
+      PGDATABASE: postgres
