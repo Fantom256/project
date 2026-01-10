@@ -8,7 +8,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/theme.css">
 
-  <!-- DataTables (сортировка/поиск по таблицам) -->
+  <!-- DataTables -->
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 </head>
 
@@ -41,6 +41,9 @@
       <button class="btn btn-outline-danger" onclick="logout()">Выйти</button>
     </div>
   </div>
+
+  <!-- сюда будем выводить ошибки API вместо "тихого" падения -->
+  <div id="adminAlert" class="alert alert-warning d-none"></div>
 
   <ul class="nav nav-tabs mb-3" id="adminTabs" role="tablist">
     <li class="nav-item" role="presentation">
@@ -88,9 +91,7 @@
           </table>
         </div>
 
-        <div class="text-muted small mt-2">
-          Статусы можно менять (active/completed/canceled).
-        </div>
+        
       </div>
     </div>
 
@@ -125,7 +126,15 @@
     <!-- ===== COURSES ===== -->
     <div class="tab-pane fade" id="tab-courses" role="tabpanel">
       <div class="card cs-card p-3 p-md-4">
-        <h2 class="h5 mb-3">Курсы</h2>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h5 m-0">Курсы</h2>
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-sm btn-outline-primary" onclick="openCourseModal()">Добавить курс</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="loadCourses()">Обновить</button>
+            <a class="btn btn-sm btn-outline-primary" href="courses.html">Открыть витрину</a>
+          </div>
+        </div>
 
         <div class="table-responsive">
           <table id="coursesTable" class="table table-striped align-middle">
@@ -137,11 +146,13 @@
                 <th>Цена</th>
                 <th>Опубликован</th>
                 <th>Создан</th>
+                <th style="width:180px;">Действия</th>
               </tr>
             </thead>
             <tbody></tbody>
           </table>
         </div>
+
       </div>
     </div>
 
@@ -159,17 +170,83 @@
                 <th>Email</th>
                 <th>Роль</th>
                 <th>Создан</th>
+                <th style="width:120px;">Удалить</th>
               </tr>
             </thead>
             <tbody></tbody>
           </table>
         </div>
 
+        <div class="text-muted small mt-2">
+          Пользователя с ролью <b>admin</b> удалить нельзя.
+        </div>
       </div>
     </div>
 
   </div>
 </main>
+
+<!-- ===== Modal (важно: ДО скрипта, чтобы courseForm существовал) ===== -->
+<div class="modal fade" id="courseModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form id="courseForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="courseModalTitle">Курс</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" id="course_id">
+
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Название</label>
+              <input class="form-control" id="title" required>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Описание</label>
+              <textarea class="form-control" id="description" rows="3" required></textarea>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Цена</label>
+              <input class="form-control" id="price" type="number" step="0.01" required>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Длительность (мес.)</label>
+              <input class="form-control" id="duration_months" type="number" min="1" value="3">
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Категория</label>
+              <select class="form-select" id="category_id" required></select>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Ссылка на картинку (image_url)</label>
+              <input class="form-control" id="image_url" placeholder="/img/courses/xxx.jpg или https://...">
+            </div>
+
+            <div class="col-12">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="is_published" checked>
+                <label class="form-check-label" for="is_published">Опубликован</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Отмена</button>
+          <button class="btn btn-primary" type="submit">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <script src="/js/nav.js" defer></script>
 <div id="footer-holder"></div>
@@ -182,7 +259,7 @@
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
-  // ===== Guard: только admin =====
+  // ===== Guard =====
   const role = localStorage.getItem('role');
   if (role !== 'admin') location.href = 'login.html';
 
@@ -192,20 +269,160 @@
     location.href = 'login.html';
   }
 
-  function apiHeaders(extra = {}) {
-    return { 'x-role': role, ...extra };
+  function showAlert(msg) {
+    const el = document.getElementById('adminAlert');
+    el.textContent = msg;
+    el.classList.remove('d-none');
+  }
+  function hideAlert() {
+    document.getElementById('adminAlert').classList.add('d-none');
   }
 
-  // ===== DataTable instances =====
+  function apiHeaders(extra = {}) {
+    const token = localStorage.getItem('token');
+    return {
+      ...(token ? { 'Authorization': 'Bearer ' + token } : {}),
+      'x-role': role, // fallback
+      ...extra
+    };
+  }
+
+  async function apiGetArray(url) {
+    const res = await fetch(url, { headers: apiHeaders() });
+    const json = await res.json().catch(() => ({}));
+
+    if (res.status === 401) {
+      showAlert(json.error || 'Сессия истекла. Войдите заново.');
+      localStorage.clear();
+      location.href = 'login.html';
+      return [];
+    }
+
+    if (!res.ok) {
+      showAlert((json && json.error) ? json.error : ('Ошибка API: ' + url));
+      console.error('API error', url, res.status, json);
+      return [];
+    }
+
+    if (!Array.isArray(json)) {
+      showAlert('Неожиданный ответ API: ' + url);
+      console.error('Not array', url, json);
+      return [];
+    }
+
+    hideAlert();
+    return json;
+  }
+
+  function initDataTable(tableId, currentInstance, options) {
+    // если DataTables не загрузился — не ломаем страницу
+    if (!window.jQuery || !jQuery.fn || !jQuery.fn.DataTable) return currentInstance;
+    if (currentInstance) currentInstance.destroy();
+    return jQuery(tableId).DataTable(options);
+  }
+
   let dtEnrollments = null;
   let dtReviews     = null;
   let dtCourses     = null;
   let dtUsers       = null;
 
-  async function loadEnrollments() {
-    const res = await fetch('/api/admin/enrollments', { headers: apiHeaders() });
-    const data = await res.json();
+  let courseModal;
 
+  async function loadCategoriesToSelect(selectedId = null) {
+    const res = await fetch('/api/admin/categories', { headers: apiHeaders() });
+    const json = await res.json().catch(() => []);
+    if (!res.ok) {
+      showAlert(json.error || 'Ошибка категорий');
+      return;
+    }
+    const sel = document.getElementById('category_id');
+    sel.innerHTML = (json || []).map(c => `<option value="${c.category_id}">${c.name}</option>`).join('');
+    if (selectedId) sel.value = String(selectedId);
+  }
+
+  async function openCourseModal(course = null) {
+    if (!courseModal) courseModal = new bootstrap.Modal('#courseModal');
+
+    document.getElementById('course_id').value = course?.course_id ?? '';
+    document.getElementById('title').value = course?.title ?? '';
+    document.getElementById('description').value = course?.description ?? '';
+    document.getElementById('price').value = course?.price ?? '';
+    document.getElementById('duration_months').value = course?.duration_months ?? 3;
+    document.getElementById('image_url').value = course?.image_url ?? '';
+    document.getElementById('is_published').checked = !!(course?.is_published ?? true);
+
+    document.getElementById('courseModalTitle').textContent =
+      course ? `Редактирование курса #${course.course_id}` : 'Добавить курс';
+
+    await loadCategoriesToSelect(course?.category_id ?? null);
+    courseModal.show();
+  }
+
+  function editCourse(encodedJson) {
+    const course = JSON.parse(decodeURIComponent(encodedJson));
+    openCourseModal(course);
+  }
+
+  document.getElementById('courseForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const id = document.getElementById('course_id').value;
+
+    const body = {
+      title: document.getElementById('title').value.trim(),
+      description: document.getElementById('description').value.trim(),
+      price: Number(document.getElementById('price').value),
+      duration_months: Number(document.getElementById('duration_months').value || 3),
+      image_url: document.getElementById('image_url').value.trim() || null,
+      category_id: Number(document.getElementById('category_id').value),
+      is_published: document.getElementById('is_published').checked
+    };
+
+    const url = id ? `/api/admin/courses/${id}` : '/api/admin/courses';
+    const method = id ? 'PATCH' : 'POST';
+
+    const res = await fetch(url, {
+      method,
+      headers: apiHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(body)
+    });
+
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      showAlert(json.error || 'Ошибка сохранения курса');
+      return;
+    }
+
+    courseModal?.hide();
+    loadCourses();
+  });
+
+  async function deleteCourse(id) {
+    if (!confirm('Удалить курс?')) return;
+    const res = await fetch('/api/admin/courses/' + id, { method: 'DELETE', headers: apiHeaders() });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) { showAlert(json.error || 'Ошибка удаления курса'); return; }
+    loadCourses();
+  }
+
+  async function deleteReview(id) {
+    if (!confirm('Удалить отзыв?')) return;
+    const res = await fetch('/api/admin/reviews/' + id, { method: 'DELETE', headers: apiHeaders() });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) { showAlert(json.error || 'Ошибка удаления отзыва'); return; }
+    loadReviews();
+  }
+
+  async function deleteUser(id) {
+    if (!confirm('Удалить пользователя?')) return;
+    const res = await fetch('/api/admin/users/' + id, { method: 'DELETE', headers: apiHeaders() });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) { showAlert(json.error || 'Ошибка удаления пользователя'); return; }
+    loadUsers();
+  }
+
+  async function loadEnrollments() {
+    const data = await apiGetArray('/api/admin/enrollments');
     const tbody = document.querySelector('#enrollmentsTable tbody');
     tbody.innerHTML = '';
 
@@ -228,11 +445,7 @@
       `);
     });
 
-    if (dtEnrollments) dtEnrollments.destroy();
-    dtEnrollments = $('#enrollmentsTable').DataTable({
-      order: [[0, 'desc']],
-      pageLength: 10
-    });
+    dtEnrollments = initDataTable('#enrollmentsTable', dtEnrollments, { order: [[0,'desc']], pageLength: 10 });
   }
 
   async function setEnrollmentStatus(enrollmentId, status) {
@@ -241,15 +454,13 @@
       headers: apiHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ status })
     });
-    const json = await res.json();
-    if (!res.ok) return alert(json.error || 'Ошибка');
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) { showAlert(json.error || 'Ошибка смены статуса'); return; }
     loadEnrollments();
   }
 
   async function loadReviews() {
-    const res = await fetch('/api/admin/reviews', { headers: apiHeaders() });
-    const data = await res.json();
-
+    const data = await apiGetArray('/api/admin/reviews');
     const tbody = document.querySelector('#reviewsTable tbody');
     tbody.innerHTML = '';
 
@@ -263,41 +474,21 @@
           <td class="text-warning" style="letter-spacing:.5px;">${stars}</td>
           <td>${(r.comment || '').slice(0, 120)}${(r.comment && r.comment.length > 120) ? '…' : ''}</td>
           <td>${new Date(r.created_at).toLocaleString()}</td>
-          <td>
-            <button class="btn btn-sm btn-outline-danger" onclick="deleteReview(${r.review_id})">Удалить</button>
-          </td>
+          <td><button class="btn btn-sm btn-outline-danger" onclick="deleteReview(${r.review_id})">Удалить</button></td>
         </tr>
       `);
     });
 
-    if (dtReviews) dtReviews.destroy();
-    dtReviews = $('#reviewsTable').DataTable({
-      order: [[0, 'desc']],
-      pageLength: 10
-    });
-  }
-
-  async function deleteReview(id) {
-    if (!confirm('Удалить отзыв?')) return;
-
-    // можно удалять через /api/reviews/:id, но тут сделаем через /api/admin/reviews/:id
-    const res = await fetch('/api/admin/reviews/' + id, {
-      method: 'DELETE',
-      headers: apiHeaders()
-    });
-    const json = await res.json();
-    if (!res.ok) return alert(json.error || 'Ошибка');
-    loadReviews();
+    dtReviews = initDataTable('#reviewsTable', dtReviews, { order: [[0,'desc']], pageLength: 10 });
   }
 
   async function loadCourses() {
-    const res = await fetch('/api/admin/courses', { headers: apiHeaders() });
-    const data = await res.json();
-
+    const data = await apiGetArray('/api/admin/courses');
     const tbody = document.querySelector('#coursesTable tbody');
     tbody.innerHTML = '';
 
     data.forEach(c => {
+      const safeJson = encodeURIComponent(JSON.stringify(c));
       tbody.insertAdjacentHTML('beforeend', `
         <tr>
           <td>${c.course_id}</td>
@@ -306,21 +497,21 @@
           <td>${Number(c.price).toLocaleString('ru-RU')} ₽</td>
           <td>${c.is_published ? 'Да' : 'Нет'}</td>
           <td>${new Date(c.created_at).toLocaleDateString()}</td>
+          <td>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-primary" onclick="editCourse('${safeJson}')">Редакт.</button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteCourse(${c.course_id})">Удалить</button>
+            </div>
+          </td>
         </tr>
       `);
     });
 
-    if (dtCourses) dtCourses.destroy();
-    dtCourses = $('#coursesTable').DataTable({
-      order: [[0, 'asc']],
-      pageLength: 10
-    });
+    dtCourses = initDataTable('#coursesTable', dtCourses, { order: [[0,'asc']], pageLength: 10 });
   }
 
   async function loadUsers() {
-    const res = await fetch('/api/admin/users', { headers: apiHeaders() });
-    const data = await res.json();
-
+    const data = await apiGetArray('/api/admin/users');
     const tbody = document.querySelector('#usersTable tbody');
     tbody.innerHTML = '';
 
@@ -332,18 +523,22 @@
           <td>${u.email}</td>
           <td><span class="badge text-bg-light">${u.role}</span></td>
           <td>${new Date(u.created_at).toLocaleString()}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-danger"
+                    ${u.role === 'admin' ? 'disabled title="Нельзя удалить администратора"' : ''}
+                    onclick="deleteUser(${u.user_id})">
+              Удалить
+            </button>
+          </td>
         </tr>
       `);
     });
 
-    if (dtUsers) dtUsers.destroy();
-    dtUsers = $('#usersTable').DataTable({
-      order: [[0, 'desc']],
-      pageLength: 10
-    });
+    dtUsers = initDataTable('#usersTable', dtUsers, { order: [[0,'desc']], pageLength: 10 });
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  // Инициализация
+  window.addEventListener('load', () => {
     loadEnrollments();
     loadReviews();
     loadCourses();
@@ -353,3 +548,4 @@
 
 </body>
 </html>
+

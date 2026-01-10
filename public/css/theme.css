@@ -4,8 +4,16 @@
   --cs-light:#f3f4f6;
 }
 
+
+
 /* общий фон и типографика */
-body{ background:var(--cs-light); color:var(--cs-dark); }
+body{
+  background:
+    radial-gradient(1200px 600px at 10% 10%, rgba(13,110,253,.12), transparent 60%),
+    radial-gradient(900px 500px at 90% 20%, rgba(25,135,84,.10), transparent 55%),
+    radial-gradient(800px 500px at 50% 90%, rgba(255,193,7,.10), transparent 55%),
+    #f6f7fb;
+}
 
 /* шапка */
 .cs-header{
