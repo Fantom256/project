@@ -6,7 +6,7 @@ services:
       - "3000:3000"
     environment:
       PORT: 3000
-      JWT_SECRET: "change_me_please"
+      JWT_SECRET: "super_secret_key_123_change_me"
 
       # подключаемся к PostgreSQL на твоём ПК (Windows)
       DB_HOST: host.docker.internal
