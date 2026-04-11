@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Кабинет менеджера | CyberSquare</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+</head>
+<body class="bg-light d-flex flex-column min-vh-100">
+
+<header class="cs-header">
+  <div class="container py-3 d-flex align-items-center justify-content-between">
+    <div class="cs-logo">CyberSquare</div>
+    <div id="burger-menu" class="burger-menu ms-3" aria-label="menu">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+  <nav id="nav-links" class="nav-links">
+    <div class="container pb-3">
+      <ul id="nav-ul" class="nav nav-pills flex-column flex-md-row gap-2"></ul>
+    </div>
+  </nav>
+</header>
+
+<main class="container py-5 flex-grow-1">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Кабинет менеджера</h1>
+      <div class="text-muted">Управление записями на курсы и контактами пользователей</div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary" onclick="goHome()">На главную</button>
+      <button class="btn btn-outline-danger" onclick="logout()">Выйти</button>
+    </div>
+  </div>
+
+  <div id="managerAlert" class="alert alert-warning d-none"></div>
+
+  <ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-enrollments" type="button">
+        Записи на курсы
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-contacts" type="button">
+        Контакты пользователей
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+
+    <div class="tab-pane fade show active" id="tab-enrollments" role="tabpanel">
+      <div class="card cs-card p-3 p-md-4">
+        <h2 class="h5 mb-3">Записи на курсы</h2>
+
+        <div class="table-responsive">
+          <table id="enrollmentsTable" class="table table-striped align-middle">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Пользователь</th>
+                <th>Email</th>
+                <th>Курс</th>
+                <th>Статус записи</th>
+                <th>Дата записи</th>
+                <th>Статус оплаты</th>
+                <th>Дата оплаты</th>
+                <th style="width:320px;">Действия</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="tab-contacts" role="tabpanel">
+      <div class="card cs-card p-3 p-md-4">
+        <h2 class="h5 mb-3">Контактная информация пользователей</h2>
+
+        <div class="table-responsive">
+          <table id="contactsTable" class="table table-striped align-middle">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>ФИО</th>
+                <th>Email</th>
+                <th>Роль</th>
+                <th>Дата регистрации</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="/js/nav.js" defer></script>
+<div id="footer-holder"></div>
+<script src="/js/footer.js" defer></script>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+  const role = localStorage.getItem('role');
+  if (role !== 'manager') location.href = 'login.html';
+
+  function goHome(){ location.href = 'index.html'; }
+  function logout(){
+    localStorage.clear();
+    location.href = 'login.html';
+  }
+
+  function showAlert(msg) {
+    const el = document.getElementById('managerAlert');
+    el.textContent = msg;
+    el.classList.remove('d-none');
+  }
+
+  function hideAlert() {
+    document.getElementById('managerAlert').classList.add('d-none');
+  }
+
+  function apiHeaders(extra = {}) {
+    const token = localStorage.getItem('token');
+    return {
+      ...(token ? { 'Authorization': 'Bearer ' + token } : {}),
+      'x-role': role,
+      ...extra
+    };
+  }
+
+  async function apiGetArray(url) {
+    const res = await fetch(url, { headers: apiHeaders() });
+    const json = await res.json().catch(() => ({}));
+
+    if (res.status === 401) {
+      showAlert(json.error || 'Сессия истекла. Войдите заново.');
+      localStorage.clear();
+      location.href = 'login.html';
+      return [];
+    }
+
+    if (!res.ok) {
+      showAlert(json.error || 'Ошибка API');
+      return [];
+    }
+
+    hideAlert();
+    return Array.isArray(json) ? json : [];
+  }
+
+  function initDataTable(tableId, currentInstance, options) {
+    if (!window.jQuery || !jQuery.fn || !jQuery.fn.DataTable) return currentInstance;
+    if (currentInstance) currentInstance.destroy();
+    return jQuery(tableId).DataTable(options);
+  }
+
+  let dtEnrollments = null;
+  let dtContacts = null;
+
+  async function loadEnrollments() {
+    const data = await apiGetArray('/api/manager/enrollments');
+    const tbody = document.querySelector('#enrollmentsTable tbody');
+    tbody.innerHTML = '';
+
+    data.forEach(e => {
+      let paymentBadge = '';
+
+      if (e.payment_status === 'paid') {
+        paymentBadge = '<span class="badge text-bg-success">paid</span>';
+      } else if (e.payment_status === 'canceled') {
+        paymentBadge = '<span class="badge text-bg-danger">canceled</span>';
+      } else {
+        paymentBadge = '<span class="badge text-bg-warning">unpaid</span>';
+      }
+
+      tbody.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td>${e.enrollment_id}</td>
+          <td>${e.full_name}</td>
+          <td>${e.email}</td>
+          <td>${e.course_title}</td>
+          <td><span class="badge text-bg-light">${e.status}</span></td>
+          <td>${new Date(e.enrolled_at).toLocaleString()}</td>
+          <td>${paymentBadge}</td>
+          <td>${e.payment_date ? new Date(e.payment_date).toLocaleString() : '—'}</td>
+          <td>
+            <div class="d-flex flex-column gap-2">
+              <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-sm btn-outline-success" onclick="setEnrollmentStatus(${e.enrollment_id}, 'active')">active</button>
+                <button class="btn btn-sm btn-outline-primary" onclick="setEnrollmentStatus(${e.enrollment_id}, 'completed')">completed</button>
+                <button class="btn btn-sm btn-outline-danger" onclick="setEnrollmentStatus(${e.enrollment_id}, 'canceled')">canceled</button>
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-sm btn-success" onclick="setPaymentStatus(${e.enrollment_id}, 'paid')">Оплачено</button>
+                <button class="btn btn-sm btn-warning" onclick="setPaymentStatus(${e.enrollment_id}, 'unpaid')">Не оплачено</button>
+                <button class="btn btn-sm btn-outline-danger" onclick="setPaymentStatus(${e.enrollment_id}, 'canceled')">Отменено</button>
+              </div>
+            </div>
+          </td>
+        </tr>
+      `);
+    });
+
+    dtEnrollments = initDataTable('#enrollmentsTable', dtEnrollments, {
+      order: [[0, 'desc']],
+      pageLength: 10
+    });
+  }
+
+  async function loadContacts() {
+    const data = await apiGetArray('/api/manager/contacts');
+    const tbody = document.querySelector('#contactsTable tbody');
+    tbody.innerHTML = '';
+
+    data.forEach(u => {
+      tbody.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td>${u.user_id}</td>
+          <td>${u.full_name}</td>
+          <td>${u.email}</td>
+          <td>${u.role}</td>
+          <td>${new Date(u.created_at).toLocaleString()}</td>
+        </tr>
+      `);
+    });
+
+    dtContacts = initDataTable('#contactsTable', dtContacts, {
+      order: [[0, 'desc']],
+      pageLength: 10
+    });
+  }
+
+  async function setEnrollmentStatus(enrollmentId, status) {
+    const res = await fetch('/api/manager/enrollments/' + enrollmentId + '/status', {
+      method: 'PATCH',
+      headers: apiHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ status })
+    });
+
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      showAlert(json.error || 'Ошибка смены статуса записи');
+      return;
+    }
+
+    loadEnrollments();
+  }
+
+  async function setPaymentStatus(enrollmentId, payment_status) {
+    const res = await fetch('/api/manager/enrollments/' + enrollmentId + '/payment-status', {
+      method: 'PATCH',
+      headers: apiHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ payment_status })
+    });
+
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      showAlert(json.error || 'Ошибка смены статуса оплаты');
+      return;
+    }
+
+    loadEnrollments();
+  }
+
+  window.addEventListener('load', () => {
+    loadEnrollments();
+    loadContacts();
+  });
+</script>
+
+</body>
+</html>

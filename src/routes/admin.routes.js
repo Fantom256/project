@@ -209,6 +209,8 @@ router.get('/enrollments', async (req, res) => {
         e.enrollment_id,
         e.status,
         e.enrolled_at,
+        e.payment_status,
+        e.payment_date,
         u.full_name,
         c.title AS course_title
       FROM enrollments e
@@ -224,26 +226,35 @@ router.get('/enrollments', async (req, res) => {
   }
 });
 
-router.patch('/enrollments/:id/status', async (req, res) => {
+router.patch('/enrollments/:id/payment-status', async (req, res) => {
   try {
     const enrollmentId = Number(req.params.id);
-    const { status } = req.body;
+    const { payment_status } = req.body;
 
-    const allowed = new Set(['active', 'completed', 'canceled']);
-    if (!allowed.has(status)) return res.status(400).json({ error: 'Недопустимый статус' });
+    const allowed = new Set(['unpaid', 'paid', 'canceled']);
+    if (!allowed.has(payment_status)) {
+      return res.status(400).json({ error: 'Недопустимый статус оплаты' });
+    }
 
-    const r = await db.query(
-      `UPDATE enrollments
-       SET status = $2
-       WHERE enrollment_id = $1
-       RETURNING enrollment_id, status`,
-      [enrollmentId, status]
-    );
+    const paymentDate = payment_status === 'paid' ? 'CURRENT_TIMESTAMP' : 'NULL';
 
-    if (!r.rows.length) return res.status(404).json({ error: 'Запись не найдена' });
+    const q = `
+      UPDATE enrollments
+      SET payment_status = $2,
+          payment_date = ${paymentDate}
+      WHERE enrollment_id = $1
+      RETURNING enrollment_id, payment_status, payment_date
+    `;
+
+    const r = await db.query(q, [enrollmentId, payment_status]);
+
+    if (!r.rows.length) {
+      return res.status(404).json({ error: 'Запись не найдена' });
+    }
+
     res.json({ success: true, ...r.rows[0] });
   } catch (e) {
-    console.error('admin enrollments status error:', e);
+    console.error('admin payment status error:', e);
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 });

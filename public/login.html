@@ -79,7 +79,13 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     }
 
     // ✅ 4) иначе — стандартный переход
-    location.href = (json.role === 'admin') ? 'admin.html' : 'cabinet.html';
+    if (json.role === 'admin') {
+  location.href = 'admin.html';
+} else if (json.role === 'manager') {
+  location.href = 'manager.html';
+} else {
+  location.href = 'cabinet.html';
+}
 
   } catch (err) {
     alert('Ошибка сети/сервера: ' + err.message);

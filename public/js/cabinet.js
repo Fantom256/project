@@ -49,20 +49,46 @@ async function reloadCabinet() {
     }
 
     data.forEach(row => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td class="fw-semibold">${row.title}</td>
-        <td>${row.category_name}</td>
-        <td class="text-nowrap">${row.price} руб.</td>
-        <td>
-          <span class="badge ${row.status === 'active' ? 'text-bg-success' : 'text-bg-secondary'}">
-            ${row.status}
-          </span>
-        </td>
-        <td class="text-nowrap">${new Date(row.enrolled_at).toLocaleString()}</td>
-      `;
-      tbody.appendChild(tr);
-    });
+  let paymentHtml = '';
+  let learningHtml = '';
+
+  if (row.payment_status === 'paid') {
+    paymentHtml = `<span class="badge text-bg-success">Оплачено</span>`;
+    learningHtml = `
+      <a href="course-view.html?course_id=${row.course_id}" 
+         class="btn btn-sm btn-outline-primary">
+         Перейти к обучению
+      </a>
+    `;
+  } else if (row.payment_status === 'canceled') {
+    paymentHtml = `<span class="badge text-bg-danger">Отменено</span>`;
+    learningHtml = `<span class="text-muted small">Недоступно</span>`;
+  } else {
+    paymentHtml = `
+      <a href="payment.html?enrollment_id=${row.enrollment_id}" 
+         class="btn btn-sm btn-primary">
+         Оплатить
+      </a>
+    `;
+    learningHtml = `<span class="text-muted small">Доступ после оплаты</span>`;
+  }
+
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="fw-semibold">${row.title}</td>
+    <td>${row.category_name}</td>
+    <td class="text-nowrap">${row.price} руб.</td>
+    <td>
+      <span class="badge ${row.status === 'active' ? 'text-bg-success' : 'text-bg-secondary'}">
+        ${row.status}
+      </span>
+    </td>
+    <td class="text-nowrap">${new Date(row.enrolled_at).toLocaleString()}</td>
+    <td>${paymentHtml}</td>
+    <td>${learningHtml}</td>
+  `;
+  tbody.appendChild(tr);
+});
 
   } catch (e) {
     console.error(e);

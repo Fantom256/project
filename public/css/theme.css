@@ -92,4 +92,18 @@ body{
   flex: 0 0 44px;
 }
 .cs-icon i{ font-size: 18px; }
+.lesson-content pre {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 12px;
+  overflow-x: auto;
+}
 
+.lesson-content code {
+  font-family: Consolas, monospace;
+}
+
+.lesson-content h2,
+.lesson-content h3 {
+  margin-top: 1rem;
+}

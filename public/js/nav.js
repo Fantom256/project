@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!navUl) return;
 
   const userId = localStorage.getItem('user_id');
-  const role   = localStorage.getItem('role');        // admin|student
+  const role   = localStorage.getItem('role'); // admin | manager | student
   const name   = localStorage.getItem('full_name');
 
   let links = `
@@ -16,8 +16,13 @@ document.addEventListener('DOMContentLoaded', () => {
   `;
 
   if (userId) {
-    if (role === 'admin') links += `<li class="nav-item"><a class="nav-link" href="admin.html">Админ-панель</a></li>`;
-    else links += `<li class="nav-item"><a class="nav-link" href="cabinet.html">Личный кабинет</a></li>`;
+    if (role === 'admin') {
+      links += `<li class="nav-item"><a class="nav-link" href="admin.html">Админ-панель</a></li>`;
+    } else if (role === 'manager') {
+      links += `<li class="nav-item"><a class="nav-link" href="manager.html">Кабинет менеджера</a></li>`;
+    } else {
+      links += `<li class="nav-item"><a class="nav-link" href="cabinet.html">Личный кабинет</a></li>`;
+    }
 
     links += `
       <li class="nav-item"><span class="nav-link disabled">${name || 'Пользователь'}</span></li>

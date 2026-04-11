@@ -40,14 +40,21 @@ router.get('/me', auth, async (req, res) => {
   const user_id = req.user.user_id;
   try {
     const r = await db.query(
-      `SELECT e.enrolled_at, e.status,
-              c.course_id, c.title, c.price, c.duration_months,
-              cat.name AS category_name
-       FROM enrollments e
-       JOIN courses c ON c.course_id = e.course_id
-       JOIN categories cat ON cat.category_id = c.category_id
-       WHERE e.user_id = $1
-       ORDER BY e.enrolled_at DESC`,
+      `SELECT
+  e.enrollment_id,
+  e.enrolled_at,
+  e.status,
+  e.payment_status,
+  e.payment_date,
+  c.course_id,
+  c.title,
+  c.price,
+  cat.name AS category_name
+FROM enrollments e
+JOIN courses c ON c.course_id = e.course_id
+JOIN categories cat ON cat.category_id = c.category_id
+WHERE e.user_id = $1
+ORDER BY e.enrolled_at DESC`,
       [user_id]
     );
 

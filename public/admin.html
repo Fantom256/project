@@ -33,7 +33,7 @@
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <div>
       <h1 class="h3 mb-1">Админ-панель</h1>
-      <div class="text-muted">Управление пользователями, курсами, записями и отзывами</div>
+      <div class="text-muted">Управление курсами, отзывами и пользователями</div>
     </div>
 
     <div class="d-flex gap-2">
@@ -42,17 +42,11 @@
     </div>
   </div>
 
-  <!-- сюда будем выводить ошибки API вместо "тихого" падения -->
   <div id="adminAlert" class="alert alert-warning d-none"></div>
 
   <ul class="nav nav-tabs mb-3" id="adminTabs" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-enrollments" type="button" role="tab">
-        Записи на курсы
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-reviews" type="button" role="tab">
+      <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-reviews" type="button" role="tab">
         Отзывы
       </button>
     </li>
@@ -70,33 +64,8 @@
 
   <div class="tab-content">
 
-    <!-- ===== ENROLLMENTS ===== -->
-    <div class="tab-pane fade show active" id="tab-enrollments" role="tabpanel">
-      <div class="card cs-card p-3 p-md-4">
-        <h2 class="h5 mb-3">Записи на курсы</h2>
-
-        <div class="table-responsive">
-          <table id="enrollmentsTable" class="table table-striped align-middle">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Студент</th>
-                <th>Курс</th>
-                <th>Статус</th>
-                <th>Дата записи</th>
-                <th style="width:260px;">Действия</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-
-        
-      </div>
-    </div>
-
     <!-- ===== REVIEWS ===== -->
-    <div class="tab-pane fade" id="tab-reviews" role="tabpanel">
+    <div class="tab-pane fade show active" id="tab-reviews" role="tabpanel">
       <div class="card cs-card p-3 p-md-4">
         <h2 class="h5 mb-3">Отзывы</h2>
 
@@ -118,7 +87,7 @@
         </div>
 
         <div class="text-muted small mt-2">
-          Удаление доступно только администратору.
+          Удаление отзывов доступно только администратору.
         </div>
       </div>
     </div>
@@ -186,7 +155,7 @@
   </div>
 </main>
 
-<!-- ===== Modal (важно: ДО скрипта, чтобы courseForm существовал) ===== -->
+<!-- ===== Modal ===== -->
 <div class="modal fade" id="courseModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -254,12 +223,10 @@
 
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
-  // ===== Guard =====
   const role = localStorage.getItem('role');
   if (role !== 'admin') location.href = 'login.html';
 
@@ -274,6 +241,7 @@
     el.textContent = msg;
     el.classList.remove('d-none');
   }
+
   function hideAlert() {
     document.getElementById('adminAlert').classList.add('d-none');
   }
@@ -282,7 +250,7 @@
     const token = localStorage.getItem('token');
     return {
       ...(token ? { 'Authorization': 'Bearer ' + token } : {}),
-      'x-role': role, // fallback
+      'x-role': role,
       ...extra
     };
   }
@@ -315,26 +283,25 @@
   }
 
   function initDataTable(tableId, currentInstance, options) {
-    // если DataTables не загрузился — не ломаем страницу
     if (!window.jQuery || !jQuery.fn || !jQuery.fn.DataTable) return currentInstance;
     if (currentInstance) currentInstance.destroy();
     return jQuery(tableId).DataTable(options);
   }
 
-  let dtEnrollments = null;
-  let dtReviews     = null;
-  let dtCourses     = null;
-  let dtUsers       = null;
-
+  let dtReviews = null;
+  let dtCourses = null;
+  let dtUsers = null;
   let courseModal;
 
   async function loadCategoriesToSelect(selectedId = null) {
     const res = await fetch('/api/admin/categories', { headers: apiHeaders() });
     const json = await res.json().catch(() => []);
+
     if (!res.ok) {
       showAlert(json.error || 'Ошибка категорий');
       return;
     }
+
     const sel = document.getElementById('category_id');
     sel.innerHTML = (json || []).map(c => `<option value="${c.category_id}">${c.name}</option>`).join('');
     if (selectedId) sel.value = String(selectedId);
@@ -388,6 +355,7 @@
     });
 
     const json = await res.json().catch(() => ({}));
+
     if (!res.ok) {
       showAlert(json.error || 'Ошибка сохранения курса');
       return;
@@ -399,64 +367,56 @@
 
   async function deleteCourse(id) {
     if (!confirm('Удалить курс?')) return;
-    const res = await fetch('/api/admin/courses/' + id, { method: 'DELETE', headers: apiHeaders() });
+
+    const res = await fetch('/api/admin/courses/' + id, {
+      method: 'DELETE',
+      headers: apiHeaders()
+    });
+
     const json = await res.json().catch(() => ({}));
-    if (!res.ok) { showAlert(json.error || 'Ошибка удаления курса'); return; }
+
+    if (!res.ok) {
+      showAlert(json.error || 'Ошибка удаления курса');
+      return;
+    }
+
     loadCourses();
   }
 
   async function deleteReview(id) {
     if (!confirm('Удалить отзыв?')) return;
-    const res = await fetch('/api/admin/reviews/' + id, { method: 'DELETE', headers: apiHeaders() });
+
+    const res = await fetch('/api/admin/reviews/' + id, {
+      method: 'DELETE',
+      headers: apiHeaders()
+    });
+
     const json = await res.json().catch(() => ({}));
-    if (!res.ok) { showAlert(json.error || 'Ошибка удаления отзыва'); return; }
+
+    if (!res.ok) {
+      showAlert(json.error || 'Ошибка удаления отзыва');
+      return;
+    }
+
     loadReviews();
   }
 
   async function deleteUser(id) {
     if (!confirm('Удалить пользователя?')) return;
-    const res = await fetch('/api/admin/users/' + id, { method: 'DELETE', headers: apiHeaders() });
+
+    const res = await fetch('/api/admin/users/' + id, {
+      method: 'DELETE',
+      headers: apiHeaders()
+    });
+
     const json = await res.json().catch(() => ({}));
-    if (!res.ok) { showAlert(json.error || 'Ошибка удаления пользователя'); return; }
+
+    if (!res.ok) {
+      showAlert(json.error || 'Ошибка удаления пользователя');
+      return;
+    }
+
     loadUsers();
-  }
-
-  async function loadEnrollments() {
-    const data = await apiGetArray('/api/admin/enrollments');
-    const tbody = document.querySelector('#enrollmentsTable tbody');
-    tbody.innerHTML = '';
-
-    data.forEach(e => {
-      tbody.insertAdjacentHTML('beforeend', `
-        <tr>
-          <td>${e.enrollment_id}</td>
-          <td>${e.full_name}</td>
-          <td>${e.course_title}</td>
-          <td><span class="badge text-bg-light">${e.status}</span></td>
-          <td>${new Date(e.enrolled_at).toLocaleString()}</td>
-          <td>
-            <div class="d-flex flex-wrap gap-2">
-              <button class="btn btn-sm btn-outline-success" onclick="setEnrollmentStatus(${e.enrollment_id}, 'active')">active</button>
-              <button class="btn btn-sm btn-outline-primary" onclick="setEnrollmentStatus(${e.enrollment_id}, 'completed')">completed</button>
-              <button class="btn btn-sm btn-outline-danger"  onclick="setEnrollmentStatus(${e.enrollment_id}, 'canceled')">canceled</button>
-            </div>
-          </td>
-        </tr>
-      `);
-    });
-
-    dtEnrollments = initDataTable('#enrollmentsTable', dtEnrollments, { order: [[0,'desc']], pageLength: 10 });
-  }
-
-  async function setEnrollmentStatus(enrollmentId, status) {
-    const res = await fetch('/api/admin/enrollments/' + enrollmentId + '/status', {
-      method: 'PATCH',
-      headers: apiHeaders({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ status })
-    });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) { showAlert(json.error || 'Ошибка смены статуса'); return; }
-    loadEnrollments();
   }
 
   async function loadReviews() {
@@ -466,6 +426,7 @@
 
     data.forEach(r => {
       const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+
       tbody.insertAdjacentHTML('beforeend', `
         <tr>
           <td>${r.review_id}</td>
@@ -474,12 +435,17 @@
           <td class="text-warning" style="letter-spacing:.5px;">${stars}</td>
           <td>${(r.comment || '').slice(0, 120)}${(r.comment && r.comment.length > 120) ? '…' : ''}</td>
           <td>${new Date(r.created_at).toLocaleString()}</td>
-          <td><button class="btn btn-sm btn-outline-danger" onclick="deleteReview(${r.review_id})">Удалить</button></td>
+          <td>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteReview(${r.review_id})">Удалить</button>
+          </td>
         </tr>
       `);
     });
 
-    dtReviews = initDataTable('#reviewsTable', dtReviews, { order: [[0,'desc']], pageLength: 10 });
+    dtReviews = initDataTable('#reviewsTable', dtReviews, {
+      order: [[0, 'desc']],
+      pageLength: 10
+    });
   }
 
   async function loadCourses() {
@@ -489,6 +455,7 @@
 
     data.forEach(c => {
       const safeJson = encodeURIComponent(JSON.stringify(c));
+
       tbody.insertAdjacentHTML('beforeend', `
         <tr>
           <td>${c.course_id}</td>
@@ -507,7 +474,10 @@
       `);
     });
 
-    dtCourses = initDataTable('#coursesTable', dtCourses, { order: [[0,'asc']], pageLength: 10 });
+    dtCourses = initDataTable('#coursesTable', dtCourses, {
+      order: [[0, 'asc']],
+      pageLength: 10
+    });
   }
 
   async function loadUsers() {
@@ -534,12 +504,13 @@
       `);
     });
 
-    dtUsers = initDataTable('#usersTable', dtUsers, { order: [[0,'desc']], pageLength: 10 });
+    dtUsers = initDataTable('#usersTable', dtUsers, {
+      order: [[0, 'desc']],
+      pageLength: 10
+    });
   }
 
-  // Инициализация
   window.addEventListener('load', () => {
-    loadEnrollments();
     loadReviews();
     loadCourses();
     loadUsers();
@@ -548,4 +519,3 @@
 
 </body>
 </html>
-
