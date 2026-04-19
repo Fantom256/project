@@ -1,87 +1,263 @@
-:root{
-  --cs-primary:#0d6efd;
-  --cs-dark:#111827;
-  --cs-light:#f3f4f6;
+:root {
+  --cs-primary: #2563eb;
+  --cs-primary-dark: #1d4ed8;
+  --cs-dark: #111827;
+  --cs-text: #374151;
+  --cs-muted: #6b7280;
+  --cs-light: #f3f4f6;
+  --cs-border: #e5e7eb;
+  --cs-bg: #f6f7fb;
+  --cs-white: #ffffff;
+  --cs-success: #198754;
+  --cs-danger: #dc2626;
 }
 
-
-
-/* общий фон и типографика */
-body{
+/* ===== Общий фон и типографика ===== */
+body {
+  color: var(--cs-text);
   background:
-    radial-gradient(1200px 600px at 10% 10%, rgba(13,110,253,.12), transparent 60%),
-    radial-gradient(900px 500px at 90% 20%, rgba(25,135,84,.10), transparent 55%),
-    radial-gradient(800px 500px at 50% 90%, rgba(255,193,7,.10), transparent 55%),
-    #f6f7fb;
+    radial-gradient(1200px 600px at 10% 10%, rgba(37, 99, 235, 0.10), transparent 60%),
+    radial-gradient(900px 500px at 90% 20%, rgba(25, 135, 84, 0.08), transparent 55%),
+    radial-gradient(800px 500px at 50% 90%, rgba(255, 193, 7, 0.08), transparent 55%),
+    var(--cs-bg);
 }
 
-/* шапка */
-.cs-header{
-  background:#fff;
-  border-bottom:1px solid #e5e7eb;
-  position:sticky; top:0; z-index:1000;
-}
-.cs-logo{ font-weight:800; letter-spacing:.3px; }
-
-/* бургер всегда виден */
-.burger-menu{
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  width:30px;
-  height:21px;
-  cursor:pointer;
-}
-.burger-menu span{
-  display:block;
-  height:3px;
-  width:100%;
-  background:#6b7280;
-  border-radius:3px;
+/* ===== Шапка ===== */
+.cs-header {
+  background: linear-gradient(135deg, #ffffff 0%, #f4f7ff 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
-/* меню */
-.nav-links{ display:none; }
-.nav-links.show{ display:block; }
-
-/* карточки */
-.cs-card{
-  border:0;
-  border-radius:16px;
-  box-shadow:0 10px 25px rgba(0,0,0,.06);
+.cs-header-inner {
+  min-height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 
-/* ===== Footer (Light) ===== */
-.cs-footer{
-  background:#ffffff;
-  color:var(--cs-dark, #111827);
-  border-top:1px solid #e5e7eb;
+.cs-logo {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--cs-dark);
+  text-decoration: none;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
-.cs-footer .cs-logo{
-  font-weight:800;
-  letter-spacing:.3px;
+.cs-logo:hover {
+  color: var(--cs-primary);
 }
 
-.cs-footer .text-muted{
-  color:#6b7280 !important; /* серый, но читаемый */
+.cs-nav {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
 }
 
-.cs-footer-link{
-  color:var(--cs-primary, #0d6efd);
-  text-decoration:none;
+.cs-nav-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.cs-footer-link:hover{
-  text-decoration:underline;
+.cs-nav-list .nav-item {
+  list-style: none;
 }
 
-.cs-footer hr{
-  border-color:#e5e7eb;
+.cs-nav-list .nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-weight: 500;
+  color: var(--cs-text);
+  text-decoration: none;
+  background: transparent;
+  transition: all 0.2s ease;
 }
 
-/* About icons */
-.cs-icon{
+.cs-nav-list .nav-link:hover {
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--cs-primary);
+  transform: translateY(-1px);
+}
+
+.cs-nav-list .nav-link.active {
+  background: var(--cs-primary);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
+}
+
+.cs-nav-list .nav-link.logout-link {
+  color: var(--cs-danger);
+}
+
+.cs-nav-list .nav-link.logout-link:hover {
+  background: rgba(220, 38, 38, 0.08);
+  color: #b91c1c;
+}
+
+.cs-nav-user {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(17, 24, 39, 0.05);
+  color: var(--cs-dark);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ===== Карточки ===== */
+.cs-card {
+  border: 0;
+  border-radius: 20px;
+  background: var(--cs-white);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+}
+
+/* ===== Главная страница / hero ===== */
+.cs-hero-main {
+  background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
+  border-radius: 28px;
+  box-shadow: 0 16px 40px rgba(37, 99, 235, 0.08);
+  overflow: hidden;
+}
+
+.cs-hero-title {
+  color: #1f2937;
+  line-height: 1.08;
+  max-width: 900px;
+}
+
+.cs-hero-subtitle {
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: #4b5563;
+  max-width: 920px;
+}
+
+.cs-hero-side-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  border-radius: 24px;
+  padding: 28px 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(244, 247, 255, 0.96) 100%);
+  border: 1px solid rgba(37, 99, 235, 0.10);
+  box-shadow:
+    0 18px 40px rgba(37, 99, 235, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.cs-hero-side-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 35%);
+  pointer-events: none;
+}
+
+.cs-hero-side-icon,
+.cs-hero-side-card h2,
+.cs-hero-side-card p,
+.cs-hero-side-points {
+  position: relative;
+  z-index: 1;
+}
+
+.cs-hero-side-card h2 {
+  color: #1f2937;
+}
+
+.cs-hero-side-card p {
+  color: #4b5563;
+  line-height: 1.8;
+}
+
+.cs-hero-side-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  font-size: 22px;
+  color: var(--cs-primary);
+  background: rgba(37, 99, 235, 0.10);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.10);
+}
+
+.cs-hero-side-points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.cs-hero-side-points span {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cs-primary-dark);
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.10);
+}
+
+/* ===== Footer ===== */
+.cs-footer {
+  background: #ffffff;
+  color: var(--cs-dark);
+  border-top: 1px solid var(--cs-border);
+}
+
+.cs-footer .cs-logo {
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.cs-footer .text-muted {
+  color: var(--cs-muted) !important;
+}
+
+.cs-footer-link {
+  color: var(--cs-primary);
+  text-decoration: none;
+}
+
+.cs-footer-link:hover {
+  text-decoration: underline;
+}
+
+.cs-footer hr {
+  border-color: var(--cs-border);
+}
+
+/* ===== About icons ===== */
+.cs-icon {
   width: 44px;
   height: 44px;
   border-radius: 12px;
@@ -91,7 +267,12 @@ body{
   color: #fff;
   flex: 0 0 44px;
 }
-.cs-icon i{ font-size: 18px; }
+
+.cs-icon i {
+  font-size: 18px;
+}
+
+/* ===== Lesson styles ===== */
 .lesson-content pre {
   background: #f8f9fa;
   padding: 1rem;
@@ -106,4 +287,66 @@ body{
 .lesson-content h2,
 .lesson-content h3 {
   margin-top: 1rem;
+}
+
+/* ===== Reward modal ===== */
+#lessonRewardModal .modal-content {
+  border-radius: 18px;
+}
+
+#lessonRewardModal .modal-body {
+  white-space: normal;
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 992px) {
+  .cs-header-inner {
+    justify-content: center;
+  }
+
+  .cs-logo {
+    width: 100%;
+    text-align: center;
+  }
+
+  .cs-nav {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .cs-nav-list {
+    justify-content: center;
+  }
+
+  .cs-hero-side-card {
+    min-height: auto;
+  }
+
+  .cs-hero-subtitle {
+    font-size: 1.08rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .cs-header-inner {
+    min-height: auto;
+  }
+
+  .cs-nav-list {
+    gap: 8px;
+  }
+
+  .cs-nav-list .nav-link,
+  .cs-nav-user {
+    padding: 9px 12px;
+    font-size: 14px;
+  }
+
+  .cs-logo {
+    font-size: 1.7rem;
+  }
+
+  .cs-hero-title {
+    font-size: 2.4rem;
+  }
 }

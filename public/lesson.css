@@ -1,0 +1,82 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f5f7fb;
+}
+
+.lesson-page {
+  padding: 40px 20px;
+}
+
+.lesson-container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+#lesson-title {
+  margin-bottom: 10px;
+}
+
+#lesson-description {
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.editor-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+#code-editor {
+  width: 100%;
+  min-height: 300px;
+  padding: 15px;
+  font-family: Consolas, monospace;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+#check-btn {
+  margin-top: 15px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  background: #2f80ed;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#check-btn:hover {
+  background: #1366d6;
+}
+
+.result-box {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 10px;
+  white-space: pre-wrap;
+  background: #f0f0f0;
+}
+
+.result-box.success {
+  background: #e7f8ec;
+  color: #176b2c;
+}
+
+.result-box.error {
+  background: #fdecec;
+  color: #8f1d1d;
+}
+
+#checkResult {
+  white-space: pre-wrap;
+}

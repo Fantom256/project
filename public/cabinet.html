@@ -10,15 +10,13 @@
 <body class="bg-light">
 
 <header class="cs-header">
-  <div class="container py-3 d-flex align-items-center justify-content-between">
-    <div class="cs-logo">CyberSquare</div>
-    <div id="burger-menu" class="burger-menu ms-3"><span></span><span></span><span></span></div>
+  <div class="container cs-header-inner">
+    <a href="index.html" class="cs-logo">CyberSquare</a>
+
+    <nav id="nav-links" class="cs-nav">
+      <ul id="nav-ul" class="cs-nav-list"></ul>
+    </nav>
   </div>
-  <nav id="nav-links" class="nav-links">
-    <div class="container pb-3">
-      <ul id="nav-ul" class="nav nav-pills flex-column flex-md-row gap-2"></ul>
-    </div>
-  </nav>
 </header>
 
 <main class="container py-5">
@@ -64,6 +62,41 @@
     </div>
   </div>
 
+  <div class="row g-3 mb-4">
+  <div class="col-12 col-md-4">
+    <div class="card cs-card p-3">
+      <div class="text-muted">Уровень</div>
+      <div class="fs-3 fw-bold" id="statLevel">1</div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-4">
+    <div class="card cs-card p-3">
+      <div class="text-muted">Опыт (XP)</div>
+      <div class="fs-3 fw-bold" id="statXp">0</div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-4">
+    <div class="card cs-card p-3">
+      <div class="text-muted">Серия дней</div>
+      <div class="fs-3 fw-bold" id="statStreak">0</div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card cs-card p-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="text-muted">Прогресс до следующего уровня</div>
+        <div class="small fw-semibold" id="xpProgressText">0 / 100 XP</div>
+      </div>
+      <div class="progress" style="height: 14px;">
+        <div id="xpProgressBar" class="progress-bar" role="progressbar" style="width: 0%">0%</div>
+      </div>
+    </div>
+  </div>
+</div>
+
   <!-- Таблица курсов -->
   <div class="card cs-card p-3 p-md-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -92,6 +125,30 @@
       Вы пока не записаны ни на один курс.
     </div>
   </div>
+
+  <div class="row g-4 mt-1">
+  <div class="col-12 col-lg-5">
+    <div class="card cs-card p-3 p-md-4 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 m-0">Достижения</h2>
+        <span class="badge text-bg-primary" id="achievementCount">0</span>
+      </div>
+
+      <div id="achievementsList" class="d-flex flex-column gap-2">
+        <div class="text-muted">Достижения пока не получены.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-7">
+    <div class="card cs-card p-3 p-md-4 h-100">
+      <h2 class="h5 mb-3">Прогресс по курсам</h2>
+      <div id="courseProgressList" class="d-flex flex-column gap-3">
+        <div class="text-muted">Прогресс пока недоступен.</div>
+      </div>
+    </div>
+  </div>
+</div>
 
 </main>
 

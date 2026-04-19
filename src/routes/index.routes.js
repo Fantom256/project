@@ -7,6 +7,8 @@ import adminRoutes from './admin.routes.js';
 import paymentRoutes from './payment.routes.js';
 import managerRoutes from './manager.routes.js';
 import lessonRoutes from './lesson.routes.js';
+import gamificationRoutes from './gamification.routes.js';
+
 const router = Router();
 
 router.get('/health', (req, res) => res.json({ status: 'Server is running' }));
@@ -19,5 +21,6 @@ router.use('/admin', adminRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/manager', managerRoutes);
 router.use('/lessons', lessonRoutes);
-export default router;
+router.use('/gamification', gamificationRoutes);
 
+export default router;

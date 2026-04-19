@@ -15,17 +15,13 @@
 <body class="bg-light d-flex flex-column min-vh-100">
 
 <header class="cs-header">
-  <div class="container py-3 d-flex align-items-center justify-content-between">
-    <div class="cs-logo">CyberSquare</div>
-    <div id="burger-menu" class="burger-menu ms-3" aria-label="menu">
-      <span></span><span></span><span></span>
-    </div>
+  <div class="container cs-header-inner">
+    <a href="index.html" class="cs-logo">CyberSquare</a>
+
+    <nav id="nav-links" class="cs-nav">
+      <ul id="nav-ul" class="cs-nav-list"></ul>
+    </nav>
   </div>
-  <nav id="nav-links" class="nav-links">
-    <div class="container pb-3">
-      <ul id="nav-ul" class="nav nav-pills flex-column flex-md-row gap-2"></ul>
-    </div>
-  </nav>
 </header>
 
 <main class="container py-5 flex-grow-1">
@@ -282,10 +278,38 @@
     return json;
   }
 
+  function getDataTableRu() {
+    return {
+      processing: 'Обработка...',
+      search: 'Поиск:',
+      lengthMenu: 'Показать _MENU_ записей',
+      info: 'Показаны записи с _START_ по _END_ из _TOTAL_',
+      infoEmpty: 'Показаны записи с 0 по 0 из 0',
+      infoFiltered: '(отфильтровано из _MAX_ записей)',
+      loadingRecords: 'Загрузка...',
+      zeroRecords: 'Ничего не найдено',
+      emptyTable: 'Нет данных в таблице',
+      paginate: {
+        first: 'Первая',
+        previous: 'Назад',
+        next: 'Вперёд',
+        last: 'Последняя'
+      },
+      aria: {
+        sortAscending: ': активируйте для сортировки по возрастанию',
+        sortDescending: ': активируйте для сортировки по убыванию'
+      }
+    };
+  }
+
   function initDataTable(tableId, currentInstance, options) {
     if (!window.jQuery || !jQuery.fn || !jQuery.fn.DataTable) return currentInstance;
     if (currentInstance) currentInstance.destroy();
-    return jQuery(tableId).DataTable(options);
+
+    return jQuery(tableId).DataTable({
+      language: getDataTableRu(),
+      ...options
+    });
   }
 
   let dtReviews = null;

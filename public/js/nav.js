@@ -1,37 +1,41 @@
 document.addEventListener('DOMContentLoaded', () => {
   const navUl = document.getElementById('nav-ul');
-  const navLinks = document.getElementById('nav-links');
-  const burger = document.getElementById('burger-menu');
   if (!navUl) return;
 
   const userId = localStorage.getItem('user_id');
-  const role   = localStorage.getItem('role'); // admin | manager | student
-  const name   = localStorage.getItem('full_name');
+  const role = localStorage.getItem('role'); // admin | manager | student
+  const name = localStorage.getItem('full_name');
+
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+
+  function isActive(href) {
+    return currentPage === href ? 'active' : '';
+  }
 
   let links = `
-    <li class="nav-item"><a class="nav-link" href="index.html">Главная</a></li>
-    <li class="nav-item"><a class="nav-link" href="courses.html">Курсы</a></li>
-    <li class="nav-item"><a class="nav-link" href="about.html">О нас</a></li>
-    <li class="nav-item"><a class="nav-link" href="reviews.html">Отзывы</a></li>
+    <li class="nav-item"><a class="nav-link ${isActive('index.html')}" href="index.html">Главная</a></li>
+    <li class="nav-item"><a class="nav-link ${isActive('courses.html')}" href="courses.html">Курсы</a></li>
+    <li class="nav-item"><a class="nav-link ${isActive('about.html')}" href="about.html">О нас</a></li>
+    <li class="nav-item"><a class="nav-link ${isActive('reviews.html')}" href="reviews.html">Отзывы</a></li>
   `;
 
   if (userId) {
     if (role === 'admin') {
-      links += `<li class="nav-item"><a class="nav-link" href="admin.html">Админ-панель</a></li>`;
+      links += `<li class="nav-item"><a class="nav-link ${isActive('admin.html')}" href="admin.html">Админ-панель</a></li>`;
     } else if (role === 'manager') {
-      links += `<li class="nav-item"><a class="nav-link" href="manager.html">Кабинет менеджера</a></li>`;
+      links += `<li class="nav-item"><a class="nav-link ${isActive('manager.html')}" href="manager.html">Кабинет менеджера</a></li>`;
     } else {
-      links += `<li class="nav-item"><a class="nav-link" href="cabinet.html">Личный кабинет</a></li>`;
+      links += `<li class="nav-item"><a class="nav-link ${isActive('cabinet.html')}" href="cabinet.html">Личный кабинет</a></li>`;
     }
 
     links += `
-      <li class="nav-item"><span class="nav-link disabled">${name || 'Пользователь'}</span></li>
-      <li class="nav-item"><a class="nav-link text-danger" href="#" id="logoutLink">Выход</a></li>
+      <li class="nav-item"><span class="cs-nav-user">${name || 'Пользователь'}</span></li>
+      <li class="nav-item"><a class="nav-link logout-link" href="#" id="logoutLink">Выход</a></li>
     `;
   } else {
     links += `
-      <li class="nav-item"><a class="nav-link" href="login.html">Вход</a></li>
-      <li class="nav-item"><a class="nav-link" href="register.html">Регистрация</a></li>
+      <li class="nav-item"><a class="nav-link ${isActive('login.html')}" href="login.html">Вход</a></li>
+      <li class="nav-item"><a class="nav-link ${isActive('register.html')}" href="register.html">Регистрация</a></li>
     `;
   }
 
@@ -44,9 +48,5 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.clear();
       location.href = 'index.html';
     });
-  }
-
-  if (burger && navLinks) {
-    burger.addEventListener('click', () => navLinks.classList.toggle('show'));
   }
 });

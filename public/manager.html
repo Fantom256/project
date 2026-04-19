@@ -12,17 +12,13 @@
 <body class="bg-light d-flex flex-column min-vh-100">
 
 <header class="cs-header">
-  <div class="container py-3 d-flex align-items-center justify-content-between">
-    <div class="cs-logo">CyberSquare</div>
-    <div id="burger-menu" class="burger-menu ms-3" aria-label="menu">
-      <span></span><span></span><span></span>
-    </div>
+  <div class="container cs-header-inner">
+    <a href="index.html" class="cs-logo">CyberSquare</a>
+
+    <nav id="nav-links" class="cs-nav">
+      <ul id="nav-ul" class="cs-nav-list"></ul>
+    </nav>
   </div>
-  <nav id="nav-links" class="nav-links">
-    <div class="container pb-3">
-      <ul id="nav-ul" class="nav nav-pills flex-column flex-md-row gap-2"></ul>
-    </div>
-  </nav>
 </header>
 
 <main class="container py-5 flex-grow-1">
@@ -143,6 +139,36 @@
     };
   }
 
+  function translateEnrollmentStatus(status) {
+    const map = {
+      active: 'Активен',
+      completed: 'Завершён',
+      canceled: 'Отменён',
+      cancelled: 'Отменён'
+    };
+    return map[String(status).toLowerCase()] || status;
+  }
+
+  function translatePaymentStatus(status) {
+    const map = {
+      paid: 'Оплачено',
+      unpaid: 'Не оплачено',
+      canceled: 'Отменено',
+      cancelled: 'Отменено',
+      pending: 'Ожидает оплаты'
+    };
+    return map[String(status).toLowerCase()] || status;
+  }
+
+  function translateRole(roleValue) {
+    const map = {
+      student: 'Студент',
+      manager: 'Менеджер',
+      admin: 'Администратор'
+    };
+    return map[String(roleValue).toLowerCase()] || roleValue;
+  }
+
   async function apiGetArray(url) {
     const res = await fetch(url, { headers: apiHeaders() });
     const json = await res.json().catch(() => ({}));
@@ -181,12 +207,17 @@
       let paymentBadge = '';
 
       if (e.payment_status === 'paid') {
-        paymentBadge = '<span class="badge text-bg-success">paid</span>';
-      } else if (e.payment_status === 'canceled') {
-        paymentBadge = '<span class="badge text-bg-danger">canceled</span>';
+        paymentBadge = '<span class="badge text-bg-success">Оплачено</span>';
+      } else if (e.payment_status === 'canceled' || e.payment_status === 'cancelled') {
+        paymentBadge = '<span class="badge text-bg-danger">Отменено</span>';
       } else {
-        paymentBadge = '<span class="badge text-bg-warning">unpaid</span>';
+        paymentBadge = '<span class="badge text-bg-warning">Не оплачено</span>';
       }
+
+      let enrollmentBadgeClass = 'text-bg-light';
+      if (e.status === 'active') enrollmentBadgeClass = 'text-bg-success';
+      if (e.status === 'completed') enrollmentBadgeClass = 'text-bg-primary';
+      if (e.status === 'canceled' || e.status === 'cancelled') enrollmentBadgeClass = 'text-bg-danger';
 
       tbody.insertAdjacentHTML('beforeend', `
         <tr>
@@ -194,16 +225,16 @@
           <td>${e.full_name}</td>
           <td>${e.email}</td>
           <td>${e.course_title}</td>
-          <td><span class="badge text-bg-light">${e.status}</span></td>
+          <td><span class="badge ${enrollmentBadgeClass}">${translateEnrollmentStatus(e.status)}</span></td>
           <td>${new Date(e.enrolled_at).toLocaleString()}</td>
           <td>${paymentBadge}</td>
           <td>${e.payment_date ? new Date(e.payment_date).toLocaleString() : '—'}</td>
           <td>
             <div class="d-flex flex-column gap-2">
               <div class="d-flex flex-wrap gap-2">
-                <button class="btn btn-sm btn-outline-success" onclick="setEnrollmentStatus(${e.enrollment_id}, 'active')">active</button>
-                <button class="btn btn-sm btn-outline-primary" onclick="setEnrollmentStatus(${e.enrollment_id}, 'completed')">completed</button>
-                <button class="btn btn-sm btn-outline-danger" onclick="setEnrollmentStatus(${e.enrollment_id}, 'canceled')">canceled</button>
+                <button class="btn btn-sm btn-outline-success" onclick="setEnrollmentStatus(${e.enrollment_id}, 'active')">Активен</button>
+                <button class="btn btn-sm btn-outline-primary" onclick="setEnrollmentStatus(${e.enrollment_id}, 'completed')">Завершён</button>
+                <button class="btn btn-sm btn-outline-danger" onclick="setEnrollmentStatus(${e.enrollment_id}, 'canceled')">Отменён</button>
               </div>
               <div class="d-flex flex-wrap gap-2">
                 <button class="btn btn-sm btn-success" onclick="setPaymentStatus(${e.enrollment_id}, 'paid')">Оплачено</button>
@@ -233,7 +264,7 @@
           <td>${u.user_id}</td>
           <td>${u.full_name}</td>
           <td>${u.email}</td>
-          <td>${u.role}</td>
+          <td>${translateRole(u.role)}</td>
           <td>${new Date(u.created_at).toLocaleString()}</td>
         </tr>
       `);
