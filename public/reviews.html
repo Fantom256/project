@@ -6,6 +6,17 @@
   <title>Отзывы | CyberSquare</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/theme.css">
+  <style>
+    #reviewToast {
+      min-width: 320px;
+      border-radius: 16px;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.18);
+    }
+
+    #reviewToast .toast-body {
+      font-weight: 500;
+    }
+  </style>
 </head>
 
 <body class="bg-light">
@@ -17,6 +28,9 @@
     <nav id="nav-links" class="cs-nav">
       <ul id="nav-ul" class="cs-nav-list"></ul>
     </nav>
+    <button id="themeToggleBtn" class="btn btn-sm btn-outline-secondary" type="button">
+  🌙 Тёмная
+</button>
   </div>
 </header>
 
@@ -26,7 +40,6 @@
     <button class="btn btn-outline-secondary" onclick="location.href='index.html'">На главную</button>
   </div>
 
-  <!-- Форма (только авторизованный) -->
   <div id="addReviewCard" class="card cs-card p-4 mb-4" style="display:none;">
     <h2 class="h5 mb-3">Оставить отзыв</h2>
 
@@ -53,13 +66,11 @@
       </div>
 
       <div class="col-12 d-flex gap-2">
-        <button class="btn btn-primary" type="submit">Отправить</button>
-        <a class="btn btn-outline-primary" href="login.html">Войти</a>
+        <button class="btn btn-primary" id="submitReviewBtn" type="submit">Отправить</button>
       </div>
     </form>
   </div>
 
-  <!-- Если не авторизован -->
   <div id="needLoginCard" class="card cs-card p-4 mb-4" style="display:none;">
     <div class="d-flex flex-column flex-md-row align-items-start justify-content-between gap-3">
       <div>
@@ -73,85 +84,171 @@
     </div>
   </div>
 
-  <!-- Список отзывов -->
   <div id="reviewsContainer" class="d-flex flex-column gap-3"></div>
 </main>
 
-<script src="/js/nav.js" defer></script>
 <div id="footer-holder"></div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="reviewToast" class="toast border-0 text-bg-dark" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="reviewToastBody"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Закрыть"></button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/nav.js" defer></script>
 <script src="/js/footer.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
   const userId = localStorage.getItem('user_id');
 
-  async function loadCourseSelect() {
-    const res = await fetch('/api/courses');
-    const courses = await res.json();
-    document.getElementById('reviewCourse').innerHTML =
-      courses.map(c => `<option value="${c.course_id}">${c.title}</option>`).join('');
-  }
+  function showReviewToast(message, type = 'dark') {
+    const toastEl = document.getElementById('reviewToast');
+    const toastBody = document.getElementById('reviewToastBody');
 
-  function stars(n){ return '★'.repeat(n) + '☆'.repeat(5-n); }
-
-  async function loadReviews() {
-    const res = await fetch('/api/reviews');
-    const data = await res.json();
-
-    const wrap = document.getElementById('reviewsContainer');
-    wrap.innerHTML = '';
-
-    if (!data.length) {
-      wrap.innerHTML = `<div class="text-muted">Пока нет отзывов.</div>`;
+    if (!toastEl || !toastBody) {
+      alert(message);
       return;
     }
 
-    data.forEach(r => {
-      wrap.insertAdjacentHTML('beforeend', `
-        <div class="card cs-card p-3">
-          <div class="d-flex justify-content-between flex-wrap gap-2">
-            <div class="fw-semibold">${r.course_title}</div>
-            <div class="text-warning" style="letter-spacing:.5px;">${stars(r.rating)}</div>
-          </div>
-          ${r.comment ? `<div class="mt-2">${r.comment}</div>` : ''}
-          <div class="text-muted mt-2 small">
-            Автор: ${r.full_name} • ${new Date(r.created_at).toLocaleDateString()}
-          </div>
-        </div>
-      `);
+    toastBody.textContent = message;
+    toastEl.className = 'toast border-0';
+
+    const classMap = {
+      success: 'text-bg-success',
+      danger: 'text-bg-danger',
+      warning: 'text-bg-warning',
+      dark: 'text-bg-dark'
+    };
+
+    toastEl.classList.add(classMap[type] || 'text-bg-dark');
+
+    if (!window.bootstrap || !bootstrap.Toast) {
+      alert(message);
+      return;
+    }
+
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, {
+      delay: 3200
     });
+
+    toast.show();
+  }
+
+  async function loadCourseSelect() {
+  const token = localStorage.getItem('token');
+
+  const res = await fetch('/api/enrollments/me', {
+    headers: {
+      'Authorization': 'Bearer ' + token
+    }
+  });
+
+  const data = await res.json().catch(() => []);
+
+  const select = document.getElementById('reviewCourse');
+
+  if (!res.ok || !Array.isArray(data)) {
+    select.innerHTML = '<option value="">Нет доступных курсов</option>';
+    return;
+  }
+
+  const availableCourses = data.filter(item => item.payment_status === 'paid');
+
+  if (!availableCourses.length) {
+    select.innerHTML = '<option value="">Нет оплаченных курсов</option>';
+    return;
+  }
+
+  select.innerHTML = availableCourses
+    .map(c => `<option value="${c.course_id}">${c.title}</option>`)
+    .join('');
+}
+
+  function stars(n) {
+    return '★'.repeat(n) + '☆'.repeat(5 - n);
+  }
+
+  async function loadReviews() {
+    try {
+      const res = await fetch('/api/reviews');
+      const data = await res.json().catch(() => []);
+
+      const wrap = document.getElementById('reviewsContainer');
+      wrap.innerHTML = '';
+
+      if (!Array.isArray(data) || !data.length) {
+        wrap.innerHTML = `<div class="text-muted">Пока нет отзывов.</div>`;
+        return;
+      }
+
+      data.forEach(r => {
+        wrap.insertAdjacentHTML('beforeend', `
+          <div class="card cs-card p-3">
+            <div class="d-flex justify-content-between flex-wrap gap-2">
+              <div class="fw-semibold">${r.course_title}</div>
+              <div class="text-warning" style="letter-spacing:.5px;">${stars(r.rating)}</div>
+            </div>
+            ${r.comment ? `<div class="mt-2">${r.comment}</div>` : ''}
+            <div class="text-muted mt-2 small">
+              Автор: ${r.full_name} • ${new Date(r.created_at).toLocaleDateString()}
+            </div>
+          </div>
+        `);
+      });
+    } catch (err) {
+      console.error(err);
+      showReviewToast('Не удалось загрузить отзывы', 'danger');
+    }
   }
 
   async function submitReview(e) {
     e.preventDefault();
 
+    const submitBtn = document.getElementById('submitReviewBtn');
+
     const body = {
-      course_id: +document.getElementById('reviewCourse').value,
-      rating: +document.getElementById('reviewRating').value,
+      course_id: Number(document.getElementById('reviewCourse').value),
+      rating: Number(document.getElementById('reviewRating').value),
       comment: document.getElementById('reviewComment').value.trim()
     };
 
-    const res = await fetch('/api/reviews', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-user-id': userId // временно: пока без JWT middleware
-      },
-      body: JSON.stringify(body)
-    });
+    try {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Отправка...';
 
-    const json = await res.json();
-    if (!res.ok) {
-      alert(json.error || 'Ошибка');
-      return;
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+  'Content-Type': 'application/json',
+  'Authorization': 'Bearer ' + localStorage.getItem('token')
+},
+        body: JSON.stringify(body)
+      });
+
+      const json = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        showReviewToast(json.error || 'Ошибка отправки отзыва', 'danger');
+        return;
+      }
+
+      showReviewToast('Отзыв отправлен!', 'success');
+      e.target.reset();
+      await loadReviews();
+    } catch (err) {
+      console.error(err);
+      showReviewToast('Ошибка сети при отправке отзыва', 'danger');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Отправить';
     }
-
-    alert('Отзыв отправлен!');
-    e.target.reset();
-    loadReviews();
   }
 
   document.addEventListener('DOMContentLoaded', async () => {
-    // показать/скрыть форму
     if (userId) {
       document.getElementById('addReviewCard').style.display = 'block';
       document.getElementById('needLoginCard').style.display = 'none';
@@ -162,9 +259,9 @@
       document.getElementById('needLoginCard').style.display = 'block';
     }
 
-    loadReviews();
+    await loadReviews();
   });
 </script>
-
+<script src="/js/theme-toggle.js" defer></script>
 </body>
 </html>

@@ -1,69 +1,102 @@
 import { Router } from 'express';
 import db from '../config/db.js';
+import auth from '../middleware/auth.js';
 
 const router = Router();
 
-/* Получить все отзывы (доступно всем) */
+// Публичный список отзывов
 router.get('/', async (req, res) => {
   try {
-    const q = `
-      SELECT
-        r.review_id,
-        r.rating,
-        r.comment,
-        r.created_at,
-        u.full_name,
-        c.title AS course_title,
-        r.user_id,
-        r.course_id
-      FROM reviews r
-      JOIN users u   ON u.user_id = r.user_id
-      JOIN courses c ON c.course_id = r.course_id
-      ORDER BY r.created_at DESC
-    `;
-    const result = await db.query(q);
-    res.json(result.rows);
+    const q = await db.query(
+      `SELECT
+         r.review_id,
+         r.rating,
+         r.comment,
+         r.created_at,
+         u.full_name,
+         c.title AS course_title
+       FROM reviews r
+       JOIN users u ON u.user_id = r.user_id
+       JOIN courses c ON c.course_id = r.course_id
+       ORDER BY r.created_at DESC`
+    );
+
+    res.json(q.rows);
   } catch (e) {
-    console.error('reviews GET error:', e);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    console.error('GET /reviews error:', e);
+    res.status(500).json({ error: 'Ошибка получения отзывов' });
   }
 });
 
-/* Добавить отзыв (ТОЛЬКО авторизованный) */
-router.post('/', async (req, res) => {
+// Только авторизованный и только записанный на курс
+router.post('/', auth, async (req, res) => {
   try {
-    // ВАЖНО: проверяем авторизацию по localStorage (временно) через заголовок x-user-id
-    // Позже можно заменить на JWT middleware.
-    const userId = Number(req.headers['x-user-id']);
-    if (!userId) return res.status(401).json({ error: 'Нужно войти в аккаунт' });
-
+    const userId = req.user.user_id;
     const { course_id, rating, comment } = req.body;
 
-    if (!course_id || !rating) {
-      return res.status(400).json({ error: 'course_id и rating обязательны' });
+    const courseId = Number(course_id);
+    const reviewRating = Number(rating);
+
+    if (!courseId) {
+      return res.status(400).json({ error: 'Некорректный course_id' });
     }
-    if (rating < 1 || rating > 5) {
-      return res.status(400).json({ error: 'rating должен быть от 1 до 5' });
+
+    if (!reviewRating || reviewRating < 1 || reviewRating > 5) {
+      return res.status(400).json({ error: 'Оценка должна быть от 1 до 5' });
     }
 
-    // проверяем курс
-    const c = await db.query('SELECT 1 FROM courses WHERE course_id=$1', [course_id]);
-    if (c.rows.length === 0) return res.status(404).json({ error: 'Курс не найден' });
+    // Проверка: пользователь записан на курс
+    const enrollmentQ = await db.query(
+      `SELECT enrollment_id, payment_status, status
+       FROM enrollments
+       WHERE user_id = $1
+         AND course_id = $2
+       LIMIT 1`,
+      [userId, courseId]
+    );
 
-    // вставка (если уже есть — обновим)
-    const q = `
-      INSERT INTO reviews (user_id, course_id, rating, comment)
-      VALUES ($1, $2, $3, $4)
-      ON CONFLICT (user_id, course_id)
-      DO UPDATE SET rating = EXCLUDED.rating, comment = EXCLUDED.comment, created_at = NOW()
-      RETURNING review_id
-    `;
-    const r = await db.query(q, [userId, course_id, rating, comment || null]);
+    if (!enrollmentQ.rows.length) {
+      return res.status(403).json({
+        error: 'Оставить отзыв можно только после записи на курс'
+      });
+    }
 
-    res.status(201).json({ success: true, review_id: r.rows[0].review_id });
+    // Если хочешь разрешать отзыв только после оплаты — оставь эту проверку
+    if (enrollmentQ.rows[0].payment_status !== 'paid') {
+      return res.status(403).json({
+        error: 'Оставить отзыв можно только после оплаты курса'
+      });
+    }
+
+    // Если хочешь только один отзыв на курс от одного пользователя
+    const existsQ = await db.query(
+      `SELECT review_id
+       FROM reviews
+       WHERE user_id = $1 AND course_id = $2
+       LIMIT 1`,
+      [userId, courseId]
+    );
+
+    if (existsQ.rows.length) {
+      return res.status(400).json({
+        error: 'Вы уже оставляли отзыв на этот курс'
+      });
+    }
+
+    const insertQ = await db.query(
+      `INSERT INTO reviews (user_id, course_id, rating, comment)
+       VALUES ($1, $2, $3, $4)
+       RETURNING review_id, user_id, course_id, rating, comment, created_at`,
+      [userId, courseId, reviewRating, comment?.trim() || null]
+    );
+
+    res.status(201).json({
+      success: true,
+      review: insertQ.rows[0]
+    });
   } catch (e) {
-    console.error('reviews POST error:', e);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    console.error('POST /reviews error:', e);
+    res.status(500).json({ error: 'Ошибка создания отзыва' });
   }
 });
 

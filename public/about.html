@@ -21,116 +21,128 @@
     <nav id="nav-links" class="cs-nav">
       <ul id="nav-ul" class="cs-nav-list"></ul>
     </nav>
+    <button id="themeToggleBtn" class="btn btn-sm btn-outline-secondary" type="button">
+  🌙 Тёмная
+</button>
   </div>
 </header>
 
 <main class="container py-5">
 
-  <!-- Hero / About -->
-  <section class="card cs-card p-4 p-md-5 mb-4">
-    <h1 class="display-6 fw-bold mb-3">О проекте CyberSquare</h1>
+  <section class="card cs-card border-0 p-4 p-md-5 mb-4 about-hero">
+    <div class="row g-4 align-items-stretch">
+      <div class="col-12 col-lg-8 d-flex">
+        <div class="w-100 d-flex flex-column justify-content-center">
+          <!-- <span class="about-badge mb-3">О платформе</span> -->
 
-    <p class="text-muted mb-0" style="max-width: 980px;">
-      Технологии меняют то, как мы учимся, работаем и живём. Существующие рабочие места
-      устаревают в течение пяти–десяти лет после внедрения автоматизации, и, по прогнозам,
-      в ближайшем будущем около 50% рабочей силы будет занято на рабочих местах, которых ещё не существует.
-      Таким образом, понимание “машинного языка” становится приоритетом, а обучение программированию
-      может открыть перед вами огромные возможности в постоянно меняющемся цифровом мире.
-      CyberSquare — это онлайн-платформа и ресурсный центр для людей, которые хотят освоить
-      современные цифровые навыки, независимо от уровня подготовки — от новичков до практикующих специалистов.
-      Мы предлагаем курсы по широкому спектру направлений: разработка ПО, дизайн, работа с данными,
-      маркетинг и управление продуктами. В CyberSquare мы занимаемся тем, что настраиваем вас
-      на будущий успех!
-    </p>
+          <h1 class="display-5 fw-bold mb-3 about-title">
+            О проекте CyberSquare
+          </h1>
+
+          <p class="lead text-muted mb-3 about-lead">
+            CyberSquare — это образовательная онлайн-платформа, которая помогает осваивать современные цифровые навыки
+            через практику, понятную структуру обучения и реальные задания.
+          </p>
+
+          <p class="text-muted mb-4 about-text">
+            Мир быстро меняется: автоматизация, искусственный интеллект и цифровые технологии становятся частью почти
+            каждой профессии. Мы создали CyberSquare как пространство, где можно изучать актуальные направления,
+            развивать практические навыки и уверенно двигаться к будущей карьере.
+          </p>
+
+          <div class="about-points">
+            <span>Современные технологии</span>
+            <span>Практическое обучение</span>
+            <span>Рост навыков</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-4 d-flex">
+        <div class="about-side-card w-100">
+          <div class="about-side-icon">✦</div>
+          <h2 class="h4 fw-bold mb-3">Наша цель</h2>
+          <p class="mb-3">
+            Сделать обучение технологиям понятным, доступным и действительно полезным для реальной жизни.
+          </p>
+
+          <div class="about-stats">
+            <div class="about-stat">
+              <div class="about-stat-value">Практика</div>
+              <div class="about-stat-label">задания и проекты</div>
+            </div>
+
+            <div class="about-stat">
+              <div class="about-stat-value">Прогресс</div>
+              <div class="about-stat-label">уроки, уровень, достижения</div>
+            </div>
+
+            <div class="about-stat">
+              <div class="about-stat-value">Онлайн</div>
+              <div class="about-stat-label">доступ из любой точки</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <!-- Why us -->
-  <section class="card cs-card p-4 p-md-5">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-2 mb-4">
+  <section class="card cs-card border-0 p-4 p-md-5 about-section">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
       <div>
-        <h2 class="h3 fw-bold mb-1">Почему именно мы?</h2>
-        
+        <h2 class="display-6 fw-bold mb-2">Почему именно мы?</h2>
+        <p class="text-muted mb-0">Обучение, в котором теория сочетается с практикой и понятным ростом.</p>
       </div>
-      <a class="btn btn-outline-secondary" href="courses.html">Посмотреть курсы</a>
+
+      <a class="btn btn-outline-primary about-section-btn" href="courses.html">Посмотреть курсы</a>
     </div>
 
-    <div class="row g-3 g-md-4">
-      <!-- Card 1 -->
-      <div class="col-12 col-md-6 col-lg-4">
-        <div class="card cs-card p-3 h-100">
-          <div class="d-flex align-items-center gap-3 mb-2">
-            <span class="cs-icon bg-success"><i class="fa fa-bullhorn"></i></span>
-            <h3 class="h6 fw-bold m-0">Полный спектр цифровых навыков</h3>
-          </div>
-          <p class="text-muted mb-0">
-            Обучение премиальным навыкам на протяжении всего жизненного цикла цифрового продукта:
-            данные, дизайн, разработка, маркетинг и управление продуктом.
-          </p>
+    <div class="row g-4">
+      <div class="col-12 col-md-6 col-xl-4">
+        <div class="about-feature-card">
+          <div class="about-feature-icon about-feature-green">📣</div>
+          <h3>Полный спектр цифровых навыков</h3>
+          <p>Осваивай востребованные направления: программирование, данные, дизайн, маркетинг и digital-продукты.</p>
         </div>
       </div>
 
-      <!-- Card 2 -->
-      <div class="col-12 col-md-6 col-lg-4">
-        <div class="card cs-card p-3 h-100">
-          <div class="d-flex align-items-center gap-3 mb-2">
-            <span class="cs-icon bg-danger"><i class="fa fa-heart"></i></span>
-            <h3 class="h6 fw-bold m-0">Разработано экспертами отрасли</h3>
-          </div>
-          <p class="text-muted mb-0">
-            Гибкая учебная программа разрабатывается и обновляется с учётом практики и трендов рынка.
-          </p>
+      <div class="col-12 col-md-6 col-xl-4">
+        <div class="about-feature-card">
+          <div class="about-feature-icon about-feature-red">❤</div>
+          <h3>Разработано с учётом практики</h3>
+          <p>Программы ориентированы на реальные навыки и применение знаний в проектах и задачах.</p>
         </div>
       </div>
 
-      <!-- Card 3 -->
-      <div class="col-12 col-md-6 col-lg-4">
-        <div class="card cs-card p-3 h-100">
-          <div class="d-flex align-items-center gap-3 mb-2">
-            <span class="cs-icon bg-primary"><i class="fa fa-bookmark"></i></span>
-            <h3 class="h6 fw-bold m-0">Доступно онлайн</h3>
-          </div>
-          <p class="text-muted mb-0">
-            Учитесь в удобном темпе из любой точки мира: материалы, задания и прогресс доступны в браузере.
-          </p>
+      <div class="col-12 col-md-6 col-xl-4">
+        <div class="about-feature-card">
+          <div class="about-feature-icon about-feature-blue">🔖</div>
+          <h3>Доступно онлайн</h3>
+          <p>Учись в удобном темпе: материалы, задания и прогресс доступны прямо в браузере.</p>
         </div>
       </div>
 
-      <!-- Card 4 -->
-      <div class="col-12 col-md-6 col-lg-4">
-        <div class="card cs-card p-3 h-100">
-          <div class="d-flex align-items-center gap-3 mb-2">
-            <span class="cs-icon bg-warning text-dark"><i class="fa fa-line-chart"></i></span>
-            <h3 class="h6 fw-bold m-0">Практическое обучение</h3>
-          </div>
-          <p class="text-muted mb-0">
-            Основной акцент — на практике и проектных заданиях, чтобы вы могли применять знания сразу.
-          </p>
+      <div class="col-12 col-md-6 col-xl-4">
+        <div class="about-feature-card">
+          <div class="about-feature-icon about-feature-yellow">📈</div>
+          <h3>Практическое обучение</h3>
+          <p>Основной акцент — на заданиях, примерах и закреплении материала через действие.</p>
         </div>
       </div>
 
-      <!-- Card 5 -->
-      <div class="col-12 col-md-6 col-lg-4">
-        <div class="card cs-card p-3 h-100">
-          <div class="d-flex align-items-center gap-3 mb-2">
-            <span class="cs-icon" style="background:#a8231c;"><i class="fa fa-handshake-o"></i></span>
-            <h3 class="h6 fw-bold m-0">Сообщество разработчиков</h3>
-          </div>
-          <p class="text-muted mb-0">
-            Поддержка и обмен опытом: вы не учитесь в одиночку, есть общение и сопровождение.
-          </p>
+      <div class="col-12 col-md-6 col-xl-4">
+        <div class="about-feature-card">
+          <div class="about-feature-icon about-feature-orange">🤝</div>
+          <h3>Сообщество и поддержка</h3>
+          <p>Ты не остаёшься один: есть сопровождение, понятная структура и удобный учебный процесс.</p>
         </div>
       </div>
 
-      <!-- Card 6 -->
-      <div class="col-12 col-md-6 col-lg-4">
-        <div class="card cs-card p-3 h-100">
-          <div class="d-flex align-items-center gap-3 mb-2">
-            <span class="cs-icon" style="background:#3954dd;"><i class="fa fa-phone"></i></span>
-            <h3 class="h6 fw-bold m-0">Учитесь дома</h3>
-          </div>
-          <p class="text-muted mb-0">
-            Дистанционный формат с фокусом на результат: удобно совмещать с учёбой и работой.
-          </p>
+      <div class="col-12 col-md-6 col-xl-4">
+        <div class="about-feature-card">
+          <div class="about-feature-icon about-feature-indigo">🏠</div>
+          <h3>Учитесь из дома</h3>
+          <p>Дистанционный формат позволяет совмещать обучение с работой, учёбой и личным графиком.</p>
         </div>
       </div>
     </div>
@@ -142,6 +154,8 @@
 
 <div id="footer-holder"></div>
 <script src="/js/footer.js" defer></script>
+
+<script src="/js/theme-toggle.js" defer></script>
 
 </body>
 </html>

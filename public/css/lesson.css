@@ -1,0 +1,117 @@
+.lesson-content {
+  line-height: 1.8;
+  font-size: 1rem;
+  color: #374151;
+}
+
+.lesson-content p {
+  margin-bottom: 1rem;
+}
+
+.lesson-content ul,
+.lesson-content ol {
+  padding-left: 1.4rem;
+  margin-bottom: 1rem;
+}
+
+.lesson-content li {
+  margin-bottom: 0.35rem;
+}
+
+.lesson-content pre {
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 16px 18px;
+  border-radius: 14px;
+  overflow-x: auto;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.lesson-content code {
+  font-family: Consolas, monospace;
+  font-size: 0.95rem;
+}
+
+#codePracticeBlock {
+  background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.98) 100%);
+}
+
+#codeEditor {
+  width: 100%;
+  min-height: 320px;
+  padding: 16px;
+  font-family: Consolas, monospace;
+  font-size: 15px;
+  line-height: 1.6;
+  border: 1px solid #d1d5db;
+  border-radius: 14px;
+  resize: vertical;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#codeEditor:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
+#checkCodeBtn,
+#clearCodeBtn,
+#nextLessonBtn,
+#prevLessonBtn,
+#backToCourseBtn {
+  border-radius: 12px;
+}
+
+#checkResult {
+  white-space: pre-wrap;
+  border-radius: 14px;
+}
+
+#lessonStatus .badge {
+  font-size: 0.95rem;
+  padding: 10px 14px;
+  border-radius: 999px;
+}
+
+#lessonRewardBox {
+  border-radius: 14px;
+}
+
+#lessonRewardModal .modal-content {
+  border: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
+}
+
+#lessonRewardModal .modal-header {
+  border-bottom: 1px solid #eef2f7;
+}
+
+#lessonRewardModal .modal-footer {
+  border-top: 1px solid #eef2f7;
+}
+
+#lessonToast {
+  min-width: 320px;
+  border-radius: 16px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.18);
+}
+
+#lessonToast .toast-body {
+  font-weight: 500;
+}
+
+@media (max-width: 576px) {
+  #codeEditor {
+    min-height: 260px;
+    font-size: 14px;
+    padding: 14px;
+  }
+
+  .lesson-content {
+    font-size: 0.97rem;
+  }
+}

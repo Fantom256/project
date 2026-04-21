@@ -16,139 +16,192 @@
     <nav id="nav-links" class="cs-nav">
       <ul id="nav-ul" class="cs-nav-list"></ul>
     </nav>
+    <button id="themeToggleBtn" class="btn btn-sm btn-outline-secondary" type="button">
+  🌙 Тёмная
+</button>
   </div>
 </header>
 
 <main class="container py-5">
 
-  <!-- Верхний блок профиля -->
-  <div class="card cs-card p-4 p-md-5 mb-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
-      <div>
-        <h1 class="h3 mb-1">Личный кабинет</h1>
-        <div class="text-muted">
-          Добро пожаловать, <b id="userName">Пользователь</b>
+  <!-- HERO -->
+  <section class="card cs-card cabinet-hero mb-4">
+    <div class="row g-4 align-items-center">
+      <div class="col-12 col-lg-8">
+        <div class="cabinet-hero-badge">Личный кабинет</div>
+        <h1 class="cabinet-hero-title mb-2">
+          Добро пожаловать, <span id="userName">Пользователь</span>
+        </h1>
+        <p class="cabinet-hero-subtitle mb-4">
+          Продолжай обучение, отслеживай прогресс, повышай уровень и открывай новые достижения.
+        </p>
+
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn btn-outline-secondary" onclick="location.href='index.html'">На главную</button>
+          <button class="btn btn-primary" onclick="location.href='courses.html'">Выбрать курс</button>
+          <button class="btn btn-outline-primary" onclick="location.href='support.html'">Поддержка</button>
         </div>
       </div>
 
-      <div class="d-flex gap-2 align-items-start">
-        <button class="btn btn-outline-secondary" onclick="location.href='index.html'">На главную</button>
-        <button class="btn btn-primary" onclick="location.href='courses.html'">Выбрать курс</button>
+      <div class="col-12 col-lg-4">
+        <div class="cabinet-profile-mini">
+          <div class="cabinet-profile-row">
+            <span class="cabinet-profile-label">Уровень</span>
+            <span class="cabinet-profile-value" id="heroLevel">1</span>
+          </div>
+          <div class="cabinet-profile-row">
+            <span class="cabinet-profile-label">XP</span>
+            <span class="cabinet-profile-value" id="heroXp">0</span>
+          </div>
+          <div class="cabinet-profile-row">
+            <span class="cabinet-profile-label">Серия дней</span>
+            <span class="cabinet-profile-value" id="heroStreak">0</span>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- Мини-статистика -->
-  <div class="row g-3 mb-4">
-    <div class="col-12 col-md-4">
-      <div class="card cs-card p-3">
-        <div class="text-muted">Мои курсы</div>
-        <div class="fs-3 fw-bold" id="statCourses">0</div>
+  <!-- СТАТИСТИКА -->
+  <section class="row g-3 mb-4">
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="card cs-card cabinet-stat-card cabinet-stat-blue">
+        <div class="cabinet-stat-icon">📚</div>
+        <div class="cabinet-stat-label">Мои курсы</div>
+        <div class="cabinet-stat-value" id="statCourses">0</div>
       </div>
     </div>
 
-    <div class="col-12 col-md-4">
-      <div class="card cs-card p-3">
-        <div class="text-muted">Активные записи</div>
-        <div class="fs-3 fw-bold" id="statActive">0</div>
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="card cs-card cabinet-stat-card cabinet-stat-green">
+        <div class="cabinet-stat-icon">✅</div>
+        <div class="cabinet-stat-label">Активные записи</div>
+        <div class="cabinet-stat-value" id="statActive">0</div>
       </div>
     </div>
 
-    <div class="col-12 col-md-4">
-      <div class="card cs-card p-3">
-        <div class="text-muted">Последняя запись</div>
-        <div class="fw-bold" id="statLast">—</div>
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="card cs-card cabinet-stat-card cabinet-stat-slate">
+        <div class="cabinet-stat-icon">🕒</div>
+        <div class="cabinet-stat-label">Последняя запись</div>
+        <div class="cabinet-stat-date" id="statLast">—</div>
       </div>
     </div>
-  </div>
 
-  <div class="row g-3 mb-4">
-  <div class="col-12 col-md-4">
-    <div class="card cs-card p-3">
-      <div class="text-muted">Уровень</div>
-      <div class="fs-3 fw-bold" id="statLevel">1</div>
-    </div>
-  </div>
-
-  <div class="col-12 col-md-4">
-    <div class="card cs-card p-3">
-      <div class="text-muted">Опыт (XP)</div>
-      <div class="fs-3 fw-bold" id="statXp">0</div>
-    </div>
-  </div>
-
-  <div class="col-12 col-md-4">
-    <div class="card cs-card p-3">
-      <div class="text-muted">Серия дней</div>
-      <div class="fs-3 fw-bold" id="statStreak">0</div>
-    </div>
-  </div>
-
-  <div class="col-12">
-    <div class="card cs-card p-3">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <div class="text-muted">Прогресс до следующего уровня</div>
-        <div class="small fw-semibold" id="xpProgressText">0 / 100 XP</div>
-      </div>
-      <div class="progress" style="height: 14px;">
-        <div id="xpProgressBar" class="progress-bar" role="progressbar" style="width: 0%">0%</div>
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="card cs-card cabinet-stat-card cabinet-stat-purple">
+        <div class="cabinet-stat-icon">⭐</div>
+        <div class="cabinet-stat-label">Уровень</div>
+        <div class="cabinet-stat-value" id="statLevel">1</div>
       </div>
     </div>
-  </div>
-</div>
 
-  <!-- Таблица курсов -->
-  <div class="card cs-card p-3 p-md-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 class="h5 m-0">Мои курсы</h2>
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="card cs-card cabinet-stat-card cabinet-stat-indigo">
+        <div class="cabinet-stat-icon">⚡</div>
+        <div class="cabinet-stat-label">Опыт (XP)</div>
+        <div class="cabinet-stat-value" id="statXp">0</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="card cs-card cabinet-stat-card cabinet-stat-orange">
+        <div class="cabinet-stat-icon">🔥</div>
+        <div class="cabinet-stat-label">Серия дней</div>
+        <div class="cabinet-stat-value" id="statStreak">0</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ПРОДОЛЖИТЬ ОБУЧЕНИЕ -->
+  <section class="card cs-card cabinet-continue-card mb-4" id="continueLearningCard" style="display:none;">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
+      <div>
+        <div class="cabinet-section-kicker">Продолжить обучение</div>
+        <h2 class="h4 mb-2" id="continueCourseTitle">Курс</h2>
+        <div class="text-muted mb-3" id="continueCourseText">Продолжай с того места, где остановился.</div>
+
+        <div class="cabinet-continue-meta">
+          <span id="continueLessonsMeta">0 / 0 уроков</span>
+          <span id="continuePercentMeta">0%</span>
+        </div>
+
+        <div class="progress cabinet-progress mt-3">
+          <div id="continueProgressBar" class="progress-bar" role="progressbar" style="width:0%">0%</div>
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2">
+        <a id="continueBtn" href="courses.html" class="btn btn-primary">Продолжить</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- XP -->
+  <section class="card cs-card p-4 mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-2">
+      <div>
+        <div class="fw-semibold">Прогресс до следующего уровня</div>
+        <div class="text-muted small" id="xpHintText">До следующего уровня осталось 100 XP</div>
+      </div>
+      <div class="fw-semibold" id="xpTextRight">0 / 100 XP</div>
+    </div>
+
+    <div class="progress cabinet-progress">
+      <div id="xpProgressBar" class="progress-bar" role="progressbar" style="width:0%">0%</div>
+    </div>
+  </section>
+
+  <!-- МОИ КУРСЫ -->
+  <section class="card cs-card p-4 mb-4">
+    <div class="cabinet-section-head mb-3">
+      <div>
+        <h2 class="h4 m-0">Мои курсы</h2>
+        <div class="text-muted small">Список записей и быстрый переход к обучению</div>
+      </div>
       <button class="btn btn-sm btn-outline-primary" onclick="reloadCabinet()">Обновить</button>
     </div>
 
-    <div class="table-responsive">
-      <table class="table table-striped align-middle mb-0" id="myCoursesTable">
-        <thead>
-          <tr>
-            <th>Курс</th>
-            <th>Категория</th>
-            <th class="text-nowrap">Цена</th>
-            <th>Статус</th>
-            <th class="text-nowrap">Дата записи</th>
-            <th>Оплата</th>
-            <th>Обучение</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+    <div id="myCoursesList" class="cabinet-courses-list"></div>
 
-    <div id="emptyMsg" class="alert alert-info mt-3 mb-0" style="display:none;">
-      Вы пока не записаны ни на один курс.
-    </div>
-  </div>
-
-  <div class="row g-4 mt-1">
-  <div class="col-12 col-lg-5">
-    <div class="card cs-card p-3 p-md-4 h-100">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="h5 m-0">Достижения</h2>
-        <span class="badge text-bg-primary" id="achievementCount">0</span>
-      </div>
-
-      <div id="achievementsList" class="d-flex flex-column gap-2">
-        <div class="text-muted">Достижения пока не получены.</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-12 col-lg-7">
-    <div class="card cs-card p-3 p-md-4 h-100">
-      <h2 class="h5 mb-3">Прогресс по курсам</h2>
-      <div id="courseProgressList" class="d-flex flex-column gap-3">
-        <div class="text-muted">Прогресс пока недоступен.</div>
-      </div>
-    </div>
-  </div>
+<div id="emptyMsg" class="alert alert-info mt-3 mb-0" style="display:none;">
+  Вы пока не записаны ни на один курс.
 </div>
+  </section>
+
+  <!-- НИЖНИЙ БЛОК -->
+  <section class="row g-4">
+    <div class="col-12 col-xl-5">
+      <div class="card cs-card p-4 h-100">
+        <div class="cabinet-section-head mb-3">
+          <div>
+            <h2 class="h4 m-0">Достижения</h2>
+            <div class="text-muted small">Твои открытые достижения</div>
+          </div>
+          <span class="badge text-bg-primary" id="achievementsCount">0</span>
+        </div>
+
+        <div id="achievementsList" class="d-flex flex-column gap-3">
+          <div class="text-muted">Загрузка достижений...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-xl-7">
+      <div class="card cs-card p-4 h-100">
+        <div class="cabinet-section-head mb-3">
+          <div>
+            <h2 class="h4 m-0">Прогресс по курсам</h2>
+            <div class="text-muted small">Карта прохождения уроков</div>
+          </div>
+        </div>
+
+        <div id="courseProgressList" class="d-flex flex-column gap-3">
+          <div class="text-muted">Загрузка прогресса...</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
 </main>
 
@@ -156,7 +209,7 @@
 <script src="/js/cabinet.js" defer></script>
 <div id="footer-holder"></div>
 <script src="/js/footer.js" defer></script>
+<script src="/js/theme-toggle.js" defer></script>
 
 </body>
 </html>
-

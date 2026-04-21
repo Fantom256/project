@@ -8,6 +8,8 @@ import paymentRoutes from './payment.routes.js';
 import managerRoutes from './manager.routes.js';
 import lessonRoutes from './lesson.routes.js';
 import gamificationRoutes from './gamification.routes.js';
+import supportRoutes from './support.routes.js';
+import managerSupportRoutes from './manager-support.routes.js';
 
 const router = Router();
 
@@ -22,5 +24,7 @@ router.use('/payments', paymentRoutes);
 router.use('/manager', managerRoutes);
 router.use('/lessons', lessonRoutes);
 router.use('/gamification', gamificationRoutes);
+router.use('/support', supportRoutes);
+router.use('/manager/support', managerSupportRoutes);
 
 export default router;

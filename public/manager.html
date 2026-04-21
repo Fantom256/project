@@ -18,6 +18,9 @@
     <nav id="nav-links" class="cs-nav">
       <ul id="nav-ul" class="cs-nav-list"></ul>
     </nav>
+    <button id="themeToggleBtn" class="btn btn-sm btn-outline-secondary" type="button">
+  🌙 Тёмная
+</button>
   </div>
 </header>
 
@@ -26,7 +29,7 @@
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <div>
       <h1 class="h3 mb-1">Кабинет менеджера</h1>
-      <div class="text-muted">Управление записями на курсы и контактами пользователей</div>
+      <div class="text-muted">Управление записями на курсы, контактами пользователей и обращениями</div>
     </div>
 
     <div class="d-flex gap-2">
@@ -46,6 +49,11 @@
     <li class="nav-item" role="presentation">
       <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-contacts" type="button">
         Контакты пользователей
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-support" type="button">
+        Обращения
       </button>
     </li>
   </ul>
@@ -98,6 +106,68 @@
       </div>
     </div>
 
+    <div class="tab-pane fade" id="tab-support" role="tabpanel">
+      <div class="card cs-card p-3 p-md-4">
+        <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
+          <div>
+            <h2 class="h5 mb-1">Обращения поддержки</h2>
+            <div class="text-muted small">Ответы пользователям и управление статусом обращений</div>
+          </div>
+
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-sm btn-outline-secondary" onclick="loadSupportThreads()">Обновить</button>
+            <button class="btn btn-sm btn-outline-primary" onclick="filterSupportThreads('open')">Только открытые</button>
+            <button class="btn btn-sm btn-outline-dark" onclick="filterSupportThreads('all')">Все</button>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-12 col-lg-4">
+            <div id="managerSupportThreadsList" class="support-threads-list">
+              <div class="text-muted">Загрузка обращений...</div>
+            </div>
+          </div>
+
+          <div class="col-12 col-lg-8">
+            <div id="managerSupportEmptyState" class="support-empty-state">
+              <div class="support-empty-icon">💬</div>
+              <h3 class="h5 mb-2">Выберите обращение</h3>
+              <div class="text-muted">Слева появится список обращений пользователей.</div>
+            </div>
+
+            <div id="managerSupportChatArea" style="display:none;">
+              <div class="support-chat-head mb-3">
+                <div>
+                  <div class="support-chat-subject" id="managerSupportSubject">Тема обращения</div>
+                  <div class="support-chat-meta text-muted small" id="managerSupportMeta">Информация об обращении</div>
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap">
+                  <button class="btn btn-sm btn-outline-success" id="managerOpenThreadBtn" type="button">Открыть</button>
+                  <button class="btn btn-sm btn-outline-danger" id="managerCloseThreadBtn" type="button">Закрыть</button>
+                </div>
+              </div>
+
+              <div id="managerSupportMessages" class="support-messages mb-3"></div>
+
+              <form id="managerSupportReplyForm" class="d-flex flex-column gap-3">
+                <textarea
+                  id="managerSupportReplyText"
+                  class="form-control"
+                  rows="4"
+                  placeholder="Введите ответ пользователю..."
+                ></textarea>
+
+                <div class="d-flex justify-content-end">
+                  <button class="btn btn-primary" id="managerSendReplyBtn" type="submit">Отправить ответ</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </main>
 
@@ -114,8 +184,11 @@
   const role = localStorage.getItem('role');
   if (role !== 'manager') location.href = 'login.html';
 
-  function goHome(){ location.href = 'index.html'; }
-  function logout(){
+  function goHome() {
+    location.href = 'index.html';
+  }
+
+  function logout() {
     localStorage.clear();
     location.href = 'login.html';
   }
@@ -146,7 +219,7 @@
       canceled: 'Отменён',
       cancelled: 'Отменён'
     };
-    return map[String(status).toLowerCase()] || status;
+    return map[String(status || '').toLowerCase()] || status;
   }
 
   function translatePaymentStatus(status) {
@@ -157,7 +230,7 @@
       cancelled: 'Отменено',
       pending: 'Ожидает оплаты'
     };
-    return map[String(status).toLowerCase()] || status;
+    return map[String(status || '').toLowerCase()] || status;
   }
 
   function translateRole(roleValue) {
@@ -166,7 +239,16 @@
       manager: 'Менеджер',
       admin: 'Администратор'
     };
-    return map[String(roleValue).toLowerCase()] || roleValue;
+    return map[String(roleValue || '').toLowerCase()] || roleValue;
+  }
+
+  function escapeHtml(str = '') {
+    return String(str)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
   }
 
   async function apiGetArray(url) {
@@ -195,8 +277,38 @@
     return jQuery(tableId).DataTable(options);
   }
 
+  function showSupportEmptyState() {
+    const empty = document.getElementById('managerSupportEmptyState');
+    const chat = document.getElementById('managerSupportChatArea');
+
+    if (empty) empty.style.display = 'flex';
+    if (chat) chat.style.display = 'none';
+  }
+
+  function showSupportChatArea() {
+    const empty = document.getElementById('managerSupportEmptyState');
+    const chat = document.getElementById('managerSupportChatArea');
+
+    if (empty) empty.style.display = 'none';
+    if (chat) chat.style.display = 'block';
+  }
+
+  function supportStatusBadge(status) {
+    if (status === 'closed') {
+      return '<span class="badge rounded-pill text-bg-secondary">Закрыто</span>';
+    }
+    return '<span class="badge rounded-pill text-bg-success">Открыто</span>';
+  }
+
+  function filterSupportThreads(mode) {
+    supportFilter = mode;
+    loadSupportThreads();
+  }
+
   let dtEnrollments = null;
   let dtContacts = null;
+  let selectedSupportThreadId = null;
+  let supportFilter = 'open';
 
   async function loadEnrollments() {
     const data = await apiGetArray('/api/manager/enrollments');
@@ -222,9 +334,9 @@
       tbody.insertAdjacentHTML('beforeend', `
         <tr>
           <td>${e.enrollment_id}</td>
-          <td>${e.full_name}</td>
-          <td>${e.email}</td>
-          <td>${e.course_title}</td>
+          <td>${escapeHtml(e.full_name)}</td>
+          <td>${escapeHtml(e.email)}</td>
+          <td>${escapeHtml(e.course_title)}</td>
           <td><span class="badge ${enrollmentBadgeClass}">${translateEnrollmentStatus(e.status)}</span></td>
           <td>${new Date(e.enrolled_at).toLocaleString()}</td>
           <td>${paymentBadge}</td>
@@ -262,8 +374,8 @@
       tbody.insertAdjacentHTML('beforeend', `
         <tr>
           <td>${u.user_id}</td>
-          <td>${u.full_name}</td>
-          <td>${u.email}</td>
+          <td>${escapeHtml(u.full_name)}</td>
+          <td>${escapeHtml(u.email)}</td>
           <td>${translateRole(u.role)}</td>
           <td>${new Date(u.created_at).toLocaleString()}</td>
         </tr>
@@ -308,11 +420,248 @@
     loadEnrollments();
   }
 
+  async function loadSupportThreads() {
+    const list = document.getElementById('managerSupportThreadsList');
+    if (!list) return;
+
+    list.innerHTML = '<div class="text-muted">Загрузка обращений...</div>';
+
+    const query = supportFilter === 'open' ? '?status=open' : '';
+    const res = await fetch('/api/manager/support/threads' + query, {
+      headers: apiHeaders()
+    });
+
+    const json = await res.json().catch(() => ([]));
+
+    if (res.status === 401) {
+      showAlert('Сессия истекла. Войдите заново.');
+      localStorage.clear();
+      location.href = 'login.html';
+      return;
+    }
+
+    if (!res.ok) {
+      showAlert(json.error || 'Ошибка загрузки обращений');
+      list.innerHTML = '<div class="text-muted">Не удалось загрузить обращения.</div>';
+      return;
+    }
+
+    hideAlert();
+
+    if (!Array.isArray(json) || !json.length) {
+      list.innerHTML = '<div class="text-muted">Обращений пока нет.</div>';
+      showSupportEmptyState();
+      return;
+    }
+
+    list.innerHTML = json.map(thread => `
+      <button
+        class="support-thread-item ${selectedSupportThreadId === thread.thread_id ? 'active' : ''}"
+        data-thread-id="${thread.thread_id}"
+        type="button"
+      >
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <div class="support-thread-subject">${escapeHtml(thread.subject)}</div>
+          ${thread.unread_count > 0 ? `<span class="badge text-bg-primary rounded-pill">${thread.unread_count}</span>` : ''}
+        </div>
+
+        <div class="small mt-2"><b>${escapeHtml(thread.full_name)}</b></div>
+        <div class="small text-muted">${escapeHtml(thread.email)}</div>
+
+        <div class="mt-2">
+          ${supportStatusBadge(thread.status)}
+        </div>
+
+        <div class="support-thread-last mt-2">
+          ${escapeHtml(thread.last_message || 'Без сообщений')}
+        </div>
+
+        <div class="support-thread-date mt-2">
+          ${new Date(thread.updated_at).toLocaleString()}
+        </div>
+      </button>
+    `).join('');
+
+    list.querySelectorAll('[data-thread-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedSupportThreadId = Number(btn.dataset.threadId);
+        loadSupportThreads();
+        loadSupportMessages(selectedSupportThreadId);
+      });
+    });
+  }
+
+  async function loadSupportMessages(threadId) {
+    if (!threadId) {
+      showSupportEmptyState();
+      return;
+    }
+
+    const res = await fetch(`/api/manager/support/threads/${threadId}/messages`, {
+      headers: apiHeaders()
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (res.status === 401) {
+      showAlert('Сессия истекла. Войдите заново.');
+      localStorage.clear();
+      location.href = 'login.html';
+      return;
+    }
+
+    if (!res.ok) {
+      showAlert(json.error || 'Ошибка загрузки сообщений');
+      return;
+    }
+
+    hideAlert();
+    showSupportChatArea();
+
+    const subjectEl = document.getElementById('managerSupportSubject');
+    const metaEl = document.getElementById('managerSupportMeta');
+    const messagesWrap = document.getElementById('managerSupportMessages');
+    const replyText = document.getElementById('managerSupportReplyText');
+    const sendBtn = document.getElementById('managerSendReplyBtn');
+    const openBtn = document.getElementById('managerOpenThreadBtn');
+    const closeBtn = document.getElementById('managerCloseThreadBtn');
+
+    if (subjectEl) subjectEl.textContent = json.thread.subject;
+    if (metaEl) {
+      metaEl.innerHTML = `
+        ${supportStatusBadge(json.thread.status)}
+        <span class="ms-2"><b>${escapeHtml(json.thread.full_name)}</b> — ${escapeHtml(json.thread.email)}</span>
+        <span class="ms-2">Создано: ${new Date(json.thread.created_at).toLocaleString()}</span>
+      `;
+    }
+
+    if (replyText) {
+      replyText.disabled = json.thread.status === 'closed';
+      replyText.placeholder = json.thread.status === 'closed'
+        ? 'Обращение закрыто'
+        : 'Введите ответ пользователю...';
+    }
+
+    if (sendBtn) sendBtn.disabled = json.thread.status === 'closed';
+    if (openBtn) openBtn.disabled = json.thread.status === 'open';
+    if (closeBtn) closeBtn.disabled = json.thread.status === 'closed';
+
+    const messages = Array.isArray(json.messages) ? json.messages : [];
+
+    if (!messages.length) {
+      messagesWrap.innerHTML = '<div class="text-muted">Сообщений пока нет.</div>';
+    } else {
+      messagesWrap.innerHTML = messages.map(msg => {
+        const isUser = msg.sender_role === 'student';
+        return `
+          <div class="support-message ${isUser ? 'manager' : 'user'}">
+            <div class="support-message-bubble">
+              <div class="support-message-role">
+                ${isUser ? 'Пользователь' : 'Менеджер'}
+              </div>
+              <div class="support-message-text">${escapeHtml(msg.message_text)}</div>
+              <div class="support-message-date">${new Date(msg.created_at).toLocaleString()}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    messagesWrap.scrollTop = messagesWrap.scrollHeight;
+  }
+
+  async function sendSupportReply(e) {
+    e.preventDefault();
+
+    if (!selectedSupportThreadId) {
+      showAlert('Сначала выберите обращение');
+      return;
+    }
+
+    const textEl = document.getElementById('managerSupportReplyText');
+    const sendBtn = document.getElementById('managerSendReplyBtn');
+    const messageText = textEl.value.trim();
+
+    if (!messageText) {
+      showAlert('Сообщение не должно быть пустым');
+      return;
+    }
+
+    const res = await fetch(`/api/manager/support/threads/${selectedSupportThreadId}/messages`, {
+      method: 'POST',
+      headers: apiHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ message_text: messageText })
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (res.status === 401) {
+      showAlert('Сессия истекла. Войдите заново.');
+      localStorage.clear();
+      location.href = 'login.html';
+      return;
+    }
+
+    if (!res.ok) {
+      showAlert(json.error || 'Ошибка отправки ответа');
+      return;
+    }
+
+    textEl.value = '';
+    await loadSupportMessages(selectedSupportThreadId);
+    await loadSupportThreads();
+  }
+
+  async function setSupportThreadStatus(status) {
+    if (!selectedSupportThreadId) return;
+
+    const res = await fetch(`/api/manager/support/threads/${selectedSupportThreadId}/status`, {
+      method: 'PATCH',
+      headers: apiHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ status })
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (res.status === 401) {
+      showAlert('Сессия истекла. Войдите заново.');
+      localStorage.clear();
+      location.href = 'login.html';
+      return;
+    }
+
+    if (!res.ok) {
+      showAlert(json.error || 'Ошибка изменения статуса');
+      return;
+    }
+
+    await loadSupportMessages(selectedSupportThreadId);
+    await loadSupportThreads();
+  }
+
   window.addEventListener('load', () => {
     loadEnrollments();
     loadContacts();
+
+    loadSupportThreads();
+    showSupportEmptyState();
+
+    const replyForm = document.getElementById('managerSupportReplyForm');
+    if (replyForm) {
+      replyForm.addEventListener('submit', sendSupportReply);
+    }
+
+    const closeBtn = document.getElementById('managerCloseThreadBtn');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => setSupportThreadStatus('closed'));
+    }
+
+    const openBtn = document.getElementById('managerOpenThreadBtn');
+    if (openBtn) {
+      openBtn.addEventListener('click', () => setSupportThreadStatus('open'));
+    }
   });
 </script>
-
+<script src="/js/theme-toggle.js" defer></script>
 </body>
 </html>
