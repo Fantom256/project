@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Поддержка | CyberSquare</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/theme.css">
+</head>
+<body class="bg-light d-flex flex-column min-vh-100">
+
+<header class="cs-header">
+  <div class="container cs-header-inner">
+    <a href="index.html" class="cs-logo">CyberSquare</a>
+
+    <nav id="nav-links" class="cs-nav">
+      <ul id="nav-ul" class="cs-nav-list"></ul>
+    </nav>
+
+    <button id="themeToggleBtn" class="btn btn-sm btn-outline-secondary" type="button">
+      🌙 Тёмная
+    </button>
+  </div>
+</header>
+
+<main class="container py-5 flex-grow-1">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Поддержка</h1>
+      <div class="text-muted">Создание обращений и переписка с центром поддержки</div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#createSupportModal">
+        Создать новое обращение
+      </button>
+      <button class="btn btn-outline-secondary" onclick="location.href='cabinet.html'">В кабинет</button>
+      <button class="btn btn-outline-primary" onclick="location.href='index.html'">На главную</button>
+    </div>
+  </div>
+
+  <div id="userSupportAlert" class="alert alert-warning d-none"></div>
+
+  <div class="row g-4">
+    <div class="col-12">
+      <div class="card cs-card p-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
+          <div>
+            <h2 class="h5 mb-1">Мои обращения</h2>
+            <div class="text-muted small">Выберите обращение, чтобы посмотреть переписку</div>
+          </div>
+
+          <button class="btn btn-sm btn-outline-secondary" type="button" id="refreshThreadsBtn">
+            Обновить
+          </button>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-12 col-xl-5">
+            <div id="userSupportThreadsList" class="support-threads-list">
+              <div class="text-muted">Загрузка обращений...</div>
+            </div>
+          </div>
+
+          <div class="col-12 col-xl-7">
+            <div id="userSupportEmptyState" class="support-empty-state">
+              <div class="support-empty-icon">💬</div>
+              <h3 class="h5 mb-2">Выберите обращение</h3>
+              <div class="text-muted">Здесь появится переписка с центром поддержки.</div>
+            </div>
+
+            <div id="userSupportChatArea" style="display:none;">
+              <div class="support-chat-head mb-3">
+                <div>
+                  <div class="support-chat-subject" id="userSupportChatSubject">Тема обращения</div>
+                  <div class="support-chat-meta text-muted small" id="userSupportChatMeta">Информация об обращении</div>
+                </div>
+              </div>
+
+              <div id="userSupportMessages" class="support-messages mb-3"></div>
+
+              <form id="userSupportReplyForm" class="d-flex flex-column gap-3">
+                <textarea
+                  id="userSupportReplyText"
+                  class="form-control"
+                  rows="4"
+                  placeholder="Введите сообщение..."
+                ></textarea>
+
+                <div class="d-flex justify-content-end">
+                  <button id="userSupportReplyBtn" class="btn btn-primary" type="submit">
+                    Отправить сообщение
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="modal fade" id="createSupportModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content cs-card">
+      <div class="modal-header">
+        <h2 class="h5 mb-0">Новое обращение</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+      </div>
+
+      <div class="modal-body">
+        <form id="userSupportCreateForm" class="d-flex flex-column gap-3">
+          <div>
+            <label class="form-label" for="userSupportSubject">Тема</label>
+            <input
+              id="userSupportSubject"
+              class="form-control"
+              type="text"
+              placeholder="Например: Проблема с оплатой курса"
+              required
+            >
+          </div>
+
+          <div>
+            <label class="form-label" for="userSupportMessage">Сообщение</label>
+            <textarea
+              id="userSupportMessage"
+              class="form-control"
+              rows="7"
+              placeholder="Опишите проблему подробнее..."
+              required
+            ></textarea>
+          </div>
+
+          <div class="d-flex justify-content-end">
+            <button id="userSupportCreateBtn" class="btn btn-primary" type="submit">
+              Отправить
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/nav.js" defer></script>
+<div id="footer-holder"></div>
+<script src="/js/footer.js" defer></script>
+<script src="/js/theme-toggle.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
+
+  if (!token) {
+    location.replace('login.html');
+    return;
+  }
+
+  if (role === 'support') {
+    location.replace('support.html');
+    return;
+  }
+
+  if (role === 'manager') {
+    location.replace('manager.html');
+    return;
+  }
+
+  if (role === 'admin') {
+    location.replace('admin.html');
+    return;
+  }
+
+  if (role !== 'student') {
+    location.replace('index.html');
+    return;
+  }
+
+  let selectedThreadId = null;
+  let createSupportModal = null;
+
+  function apiHeaders(extra = {}) {
+    return {
+      Authorization: 'Bearer ' + token,
+      ...extra
+    };
+  }
+
+  function showAlert(msg) {
+    const el = document.getElementById('userSupportAlert');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.remove('d-none');
+  }
+
+  function hideAlert() {
+    const el = document.getElementById('userSupportAlert');
+    if (!el) return;
+    el.classList.add('d-none');
+  }
+
+  function escapeHtml(str = '') {
+    return String(str)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  function formatDate(value) {
+    if (!value) return '—';
+    return new Date(value).toLocaleString();
+  }
+
+  function supportStatusBadge(status) {
+    if (String(status || '').toLowerCase() === 'closed') {
+      return '<span class="badge rounded-pill text-bg-secondary">Закрыто</span>';
+    }
+    return '<span class="badge rounded-pill text-bg-success">Открыто</span>';
+  }
+
+  function showEmptyState() {
+    const empty = document.getElementById('userSupportEmptyState');
+    const chat = document.getElementById('userSupportChatArea');
+
+    if (empty) empty.style.display = 'flex';
+    if (chat) chat.style.display = 'none';
+  }
+
+  function showChatArea() {
+    const empty = document.getElementById('userSupportEmptyState');
+    const chat = document.getElementById('userSupportChatArea');
+
+    if (empty) empty.style.display = 'none';
+    if (chat) chat.style.display = 'block';
+  }
+
+  async function loadMyThreads() {
+    const list = document.getElementById('userSupportThreadsList');
+    if (!list) return;
+
+    list.innerHTML = '<div class="text-muted">Загрузка обращений...</div>';
+
+    try {
+      const res = await fetch('/api/support/my/threads', {
+        headers: apiHeaders()
+      });
+
+      const json = await res.json().catch(() => []);
+
+      if (res.status === 401) {
+        localStorage.clear();
+        location.replace('login.html');
+        return;
+      }
+
+      if (!res.ok) {
+        showAlert(json.error || 'Ошибка загрузки обращений');
+        list.innerHTML = '<div class="text-muted">Не удалось загрузить обращения.</div>';
+        selectedThreadId = null;
+        showEmptyState();
+        return;
+      }
+
+      hideAlert();
+
+      if (!Array.isArray(json) || !json.length) {
+        list.innerHTML = '<div class="text-muted">У вас пока нет обращений.</div>';
+        selectedThreadId = null;
+        showEmptyState();
+        return;
+      }
+
+      list.innerHTML = json.map(thread => `
+        <button
+          class="support-thread-item ${selectedThreadId === thread.thread_id ? 'active' : ''}"
+          data-thread-id="${thread.thread_id}"
+          type="button"
+        >
+          <div class="d-flex justify-content-between align-items-start gap-2">
+            <div class="support-thread-subject">${escapeHtml(thread.subject)}</div>
+            ${thread.unread_count > 0 ? `<span class="badge text-bg-primary rounded-pill">${thread.unread_count}</span>` : ''}
+          </div>
+
+          <div class="mt-2">
+            ${supportStatusBadge(thread.status)}
+          </div>
+
+          <div class="support-thread-last mt-2">
+            ${escapeHtml(thread.last_message || 'Без сообщений')}
+          </div>
+
+          <div class="support-thread-date mt-2">
+            ${formatDate(thread.updated_at)}
+          </div>
+        </button>
+      `).join('');
+
+      list.querySelectorAll('[data-thread-id]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          selectedThreadId = Number(btn.dataset.threadId);
+          await loadMyThreads();
+          await loadThreadMessages(selectedThreadId);
+        });
+      });
+    } catch (e) {
+      console.error(e);
+      showAlert('Ошибка загрузки обращений');
+      list.innerHTML = '<div class="text-muted">Не удалось загрузить обращения.</div>';
+      selectedThreadId = null;
+      showEmptyState();
+    }
+  }
+
+  async function loadThreadMessages(threadId) {
+    if (!threadId) {
+      showEmptyState();
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/support/my/threads/${threadId}/messages`, {
+        headers: apiHeaders()
+      });
+
+      const json = await res.json().catch(() => ({}));
+
+      if (res.status === 401) {
+        localStorage.clear();
+        location.replace('login.html');
+        return;
+      }
+
+      if (!res.ok) {
+        showAlert(json.error || 'Ошибка загрузки сообщений');
+        showEmptyState();
+        return;
+      }
+
+      hideAlert();
+      showChatArea();
+
+      const subjectEl = document.getElementById('userSupportChatSubject');
+      const metaEl = document.getElementById('userSupportChatMeta');
+      const messagesWrap = document.getElementById('userSupportMessages');
+      const replyText = document.getElementById('userSupportReplyText');
+      const replyBtn = document.getElementById('userSupportReplyBtn');
+
+      if (subjectEl) subjectEl.textContent = json.thread.subject || 'Без темы';
+      if (metaEl) {
+        metaEl.innerHTML = `
+          ${supportStatusBadge(json.thread.status)}
+          <span class="ms-2">Создано: ${formatDate(json.thread.created_at)}</span>
+        `;
+      }
+
+      if (replyText) {
+        replyText.disabled = json.thread.status === 'closed';
+        replyText.placeholder = json.thread.status === 'closed'
+          ? 'Обращение закрыто'
+          : 'Введите сообщение...';
+      }
+
+      if (replyBtn) replyBtn.disabled = json.thread.status === 'closed';
+
+      const messages = Array.isArray(json.messages) ? json.messages : [];
+
+      if (!messages.length) {
+        messagesWrap.innerHTML = '<div class="text-muted">Сообщений пока нет.</div>';
+      } else {
+        messagesWrap.innerHTML = messages.map(msg => {
+          const fromStudent = msg.sender_role === 'student';
+
+          return `
+            <div class="support-message ${fromStudent ? 'user' : 'manager'}">
+              <div class="support-message-bubble">
+                <div class="support-message-role">
+                  ${fromStudent ? 'Вы' : 'Центр поддержки'}
+                </div>
+                <div class="support-message-text">${escapeHtml(msg.message_text)}</div>
+                <div class="support-message-date">${formatDate(msg.created_at)}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      messagesWrap.scrollTop = messagesWrap.scrollHeight;
+    } catch (e) {
+      console.error(e);
+      showAlert('Ошибка загрузки сообщений');
+      showEmptyState();
+    }
+  }
+
+  async function createThread(e) {
+    e.preventDefault();
+
+    const subjectEl = document.getElementById('userSupportSubject');
+    const messageEl = document.getElementById('userSupportMessage');
+    const btn = document.getElementById('userSupportCreateBtn');
+
+    if (!subjectEl || !messageEl || !btn) return;
+
+    const subject = subjectEl.value.trim();
+    const message_text = messageEl.value.trim();
+
+    if (!subject || !message_text) {
+      showAlert('Заполните тему и сообщение');
+      return;
+    }
+
+    try {
+      btn.disabled = true;
+      btn.textContent = 'Отправка...';
+
+      const res = await fetch('/api/support/my/threads', {
+        method: 'POST',
+        headers: apiHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ subject, message_text })
+      });
+
+      const json = await res.json().catch(() => ({}));
+
+      if (res.status === 401) {
+        localStorage.clear();
+        location.replace('login.html');
+        return;
+      }
+
+      if (!res.ok) {
+        showAlert(json.error || 'Ошибка создания обращения');
+        return;
+      }
+
+      hideAlert();
+      subjectEl.value = '';
+      messageEl.value = '';
+      selectedThreadId = json.thread?.thread_id || null;
+
+      if (createSupportModal) {
+        createSupportModal.hide();
+      }
+
+      await loadMyThreads();
+
+      if (selectedThreadId) {
+        await loadThreadMessages(selectedThreadId);
+      } else {
+        showEmptyState();
+      }
+    } catch (e) {
+      console.error(e);
+      showAlert('Ошибка создания обращения');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Отправить';
+    }
+  }
+
+  async function sendReply(e) {
+    e.preventDefault();
+
+    if (!selectedThreadId) {
+      showAlert('Сначала выберите обращение');
+      return;
+    }
+
+    const textEl = document.getElementById('userSupportReplyText');
+    const btn = document.getElementById('userSupportReplyBtn');
+
+    if (!textEl || !btn) return;
+
+    const message_text = textEl.value.trim();
+
+    if (!message_text) {
+      showAlert('Сообщение не должно быть пустым');
+      return;
+    }
+
+    try {
+      btn.disabled = true;
+      btn.textContent = 'Отправка...';
+
+      const res = await fetch(`/api/support/my/threads/${selectedThreadId}/messages`, {
+        method: 'POST',
+        headers: apiHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ message_text })
+      });
+
+      const json = await res.json().catch(() => ({}));
+
+      if (res.status === 401) {
+        localStorage.clear();
+        location.replace('login.html');
+        return;
+      }
+
+      if (!res.ok) {
+        showAlert(json.error || 'Ошибка отправки сообщения');
+        return;
+      }
+
+      hideAlert();
+      textEl.value = '';
+
+      await loadThreadMessages(selectedThreadId);
+      await loadMyThreads();
+    } catch (e) {
+      console.error(e);
+      showAlert('Ошибка отправки сообщения');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Отправить сообщение';
+    }
+  }
+
+  window.loadMyThreads = loadMyThreads;
+
+  const modalEl = document.getElementById('createSupportModal');
+  if (modalEl && window.bootstrap) {
+    createSupportModal = new bootstrap.Modal(modalEl);
+  }
+
+  const createForm = document.getElementById('userSupportCreateForm');
+  if (createForm) {
+    createForm.addEventListener('submit', createThread);
+  }
+
+  const replyForm = document.getElementById('userSupportReplyForm');
+  if (replyForm) {
+    replyForm.addEventListener('submit', sendReply);
+  }
+
+  const refreshBtn = document.getElementById('refreshThreadsBtn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', loadMyThreads);
+  }
+
+  loadMyThreads();
+  showEmptyState();
+});
+</script>
+
+</body>
+</html>

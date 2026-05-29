@@ -51,7 +51,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   try {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type':'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
 
@@ -62,16 +62,38 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       return;
     }
 
-    // ✅ 1) сохраняем токен (если сервер его отдаёт)
     const token = json.token || json.access_token || json.accessToken;
+    const user = json.user || {};
+
+    const userId = user.user_id ?? json.user_id ?? null;
+    const fullName = user.full_name ?? json.full_name ?? '';
+    const role = user.role ?? json.role ?? '';
+
     if (token) localStorage.setItem('token', token);
+    if (userId != null) localStorage.setItem('user_id', String(userId));
+    if (fullName) localStorage.setItem('full_name', fullName);
+    if (role) localStorage.setItem('role', role);
 
-    // ✅ 2) сохраняем данные пользователя
-    if (json.user_id != null) localStorage.setItem('user_id', String(json.user_id));
-    if (json.full_name != null) localStorage.setItem('full_name', json.full_name);
-    if (json.role != null) localStorage.setItem('role', json.role);
+    // Служебные роли всегда отправляем в их кабинет
+    if (role === 'admin') {
+      localStorage.removeItem('redirect_after_login');
+      location.href = 'admin.html';
+      return;
+    }
 
-    // ✅ 3) возвращаем на страницу, откуда пришли (если записали redirect_after_login)
+    if (role === 'manager') {
+      localStorage.removeItem('redirect_after_login');
+      location.href = 'manager.html';
+      return;
+    }
+
+    if (role === 'support') {
+      localStorage.removeItem('redirect_after_login');
+      location.href = 'support.html';
+      return;
+    }
+
+    // Обычного пользователя можно вернуть туда, откуда он пришёл
     const back = localStorage.getItem('redirect_after_login');
     if (back) {
       localStorage.removeItem('redirect_after_login');
@@ -79,15 +101,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       return;
     }
 
-    // ✅ 4) иначе — стандартный переход
-    if (json.role === 'admin') {
-  location.href = 'admin.html';
-} else if (json.role === 'manager') {
-  location.href = 'manager.html';
-} else {
-  location.href = 'cabinet.html';
-}
-
+    location.href = 'cabinet.html';
   } catch (err) {
     alert('Ошибка сети/сервера: ' + err.message);
   }

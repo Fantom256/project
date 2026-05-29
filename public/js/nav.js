@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!navUl) return;
 
   const userId = localStorage.getItem('user_id');
-  const role = localStorage.getItem('role'); // admin | manager | student
+  const role = localStorage.getItem('role'); // admin | manager | student | support
   const name = localStorage.getItem('full_name');
 
   const currentPage = window.location.pathname.split('/').pop() || 'index.html';
@@ -21,11 +21,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (userId) {
     if (role === 'admin') {
-      links += `<li class="nav-item"><a class="nav-link ${isActive('admin.html')}" href="admin.html">Админ-панель</a></li>`;
+      links += `
+        <li class="nav-item">
+          <a class="nav-link ${isActive('admin.html')}" href="admin.html">Админ-панель</a>
+        </li>
+      `;
     } else if (role === 'manager') {
-      links += `<li class="nav-item"><a class="nav-link ${isActive('manager.html')}" href="manager.html">Кабинет менеджера</a></li>`;
+      links += `
+        <li class="nav-item">
+          <a class="nav-link ${isActive('manager.html')}" href="manager.html">Кабинет менеджера</a>
+        </li>
+      `;
+    } else if (role === 'support') {
+      links += `
+        <li class="nav-item">
+          <a class="nav-link ${isActive('support.html')}" href="support.html">Центр поддержки</a>
+        </li>
+      `;
     } else {
-      links += `<li class="nav-item"><a class="nav-link ${isActive('cabinet.html')}" href="cabinet.html">Личный кабинет</a></li>`;
+      links += `
+        <li class="nav-item">
+          <a class="nav-link ${isActive('cabinet.html')}" href="cabinet.html">Личный кабинет</a>
+        </li>
+      `;
     }
 
     links += `

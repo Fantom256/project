@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Сообщения | CyberSquare</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/theme.css">
+</head>
+<body class="bg-light d-flex flex-column min-vh-100">
+
+<header class="cs-header">
+  <div class="container cs-header-inner">
+    <a href="index.html" class="cs-logo">CyberSquare</a>
+
+    <nav id="nav-links" class="cs-nav">
+      <ul id="nav-ul" class="cs-nav-list"></ul>
+    </nav>
+
+    <button id="themeToggleBtn" class="btn btn-sm btn-outline-secondary" type="button">
+      🌙 Тёмная
+    </button>
+  </div>
+</header>
+
+<main class="container py-5 flex-grow-1">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Сообщения</h1>
+      <div class="text-muted">Личная переписка с менеджером</div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      <button class="btn btn-outline-secondary" onclick="location.href='cabinet.html'">В кабинет</button>
+      <button class="btn btn-outline-primary" onclick="location.href='index.html'">На главную</button>
+    </div>
+  </div>
+
+  <div id="userMessagesAlert" class="alert alert-warning d-none"></div>
+
+  <div class="card cs-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
+      <div>
+        <h2 class="h5 mb-1">Диалоги</h2>
+        <div class="text-muted small">Выберите диалог, чтобы посмотреть переписку</div>
+      </div>
+
+      <button class="btn btn-sm btn-outline-secondary" type="button" id="refreshMessageThreadsBtn">
+        Обновить
+      </button>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-12 col-lg-4">
+        <div id="userMessageThreadsList" class="support-threads-list">
+          <div class="text-muted">Загрузка диалогов...</div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-8">
+        <div id="userMessageEmptyState" class="support-empty-state">
+          <div class="support-empty-icon">📨</div>
+          <h3 class="h5 mb-2">Выберите диалог</h3>
+          <div class="text-muted">Здесь появится переписка с менеджером.</div>
+        </div>
+
+        <div id="userMessageChatArea" style="display:none;">
+          <div class="support-chat-head mb-3">
+            <div>
+              <div class="support-chat-subject" id="userMessageChatTitle">Диалог с менеджером</div>
+              <div class="support-chat-meta text-muted small" id="userMessageChatMeta">Информация о диалоге</div>
+            </div>
+          </div>
+
+          <div id="userMessageMessages" class="support-messages mb-3"></div>
+
+          <form id="userMessageReplyForm" class="d-flex flex-column gap-3">
+            <textarea
+              id="userMessageReplyText"
+              class="form-control"
+              rows="4"
+              placeholder="Введите сообщение менеджеру..."
+            ></textarea>
+
+            <div class="d-flex justify-content-end">
+              <button id="userMessageReplyBtn" class="btn btn-primary" type="submit">
+                Отправить сообщение
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="/js/nav.js" defer></script>
+<div id="footer-holder"></div>
+<script src="/js/footer.js" defer></script>
+<script src="/js/theme-toggle.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
+
+  if (!token) {
+    location.replace('login.html');
+    return;
+  }
+
+  if (role === 'support') {
+    location.replace('support.html');
+    return;
+  }
+
+  if (role === 'manager') {
+    location.replace('manager.html');
+    return;
+  }
+
+  if (role === 'admin') {
+    location.replace('admin.html');
+    return;
+  }
+
+  if (role !== 'student') {
+    location.replace('index.html');
+    return;
+  }
+
+  let selectedThreadId = null;
+
+  function apiHeaders(extra = {}) {
+    return {
+      Authorization: 'Bearer ' + token,
+      ...extra
+    };
+  }
+
+  function showAlert(msg) {
+    const el = document.getElementById('userMessagesAlert');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.remove('d-none');
+  }
+
+  function hideAlert() {
+    const el = document.getElementById('userMessagesAlert');
+    if (!el) return;
+    el.classList.add('d-none');
+  }
+
+  function escapeHtml(str = '') {
+    return String(str)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  function formatDate(value) {
+    if (!value) return '—';
+    return new Date(value).toLocaleString();
+  }
+
+  function showEmptyState() {
+    const empty = document.getElementById('userMessageEmptyState');
+    const chat = document.getElementById('userMessageChatArea');
+    if (empty) empty.style.display = 'flex';
+    if (chat) chat.style.display = 'none';
+  }
+
+  function showChatArea() {
+    const empty = document.getElementById('userMessageEmptyState');
+    const chat = document.getElementById('userMessageChatArea');
+    if (empty) empty.style.display = 'none';
+    if (chat) chat.style.display = 'block';
+  }
+
+  async function loadMyMessageThreads() {
+    const list = document.getElementById('userMessageThreadsList');
+    if (!list) return;
+
+    list.innerHTML = '<div class="text-muted">Загрузка диалогов...</div>';
+
+    try {
+      const res = await fetch('/api/messages/threads', {
+        headers: apiHeaders()
+      });
+
+      const json = await res.json().catch(() => []);
+
+      if (res.status === 401) {
+        localStorage.clear();
+        location.replace('login.html');
+        return;
+      }
+
+      if (!res.ok) {
+        showAlert(json.error || 'Ошибка загрузки диалогов');
+        list.innerHTML = '<div class="text-muted">Не удалось загрузить диалоги.</div>';
+        selectedThreadId = null;
+        showEmptyState();
+        return;
+      }
+
+      hideAlert();
+
+      if (!Array.isArray(json) || !json.length) {
+        list.innerHTML = '<div class="text-muted">У вас пока нет личных сообщений от менеджера.</div>';
+        selectedThreadId = null;
+        showEmptyState();
+        return;
+      }
+
+      list.innerHTML = json.map(thread => `
+        <button
+          class="support-thread-item ${selectedThreadId === thread.thread_id ? 'active' : ''}"
+          data-thread-id="${thread.thread_id}"
+          type="button"
+        >
+          <div class="d-flex justify-content-between align-items-start gap-2">
+            <div class="support-thread-subject">${escapeHtml(thread.manager_name || 'Менеджер')}</div>
+            ${thread.unread_count > 0 ? `<span class="badge text-bg-primary rounded-pill">${thread.unread_count}</span>` : ''}
+          </div>
+
+          <div class="small text-muted mt-1">${escapeHtml(thread.manager_email || '')}</div>
+
+          <div class="support-thread-last mt-2">
+            ${escapeHtml(thread.last_message || 'Сообщений пока нет')}
+          </div>
+
+          <div class="support-thread-date mt-2">
+            ${formatDate(thread.updated_at)}
+          </div>
+        </button>
+      `).join('');
+
+      list.querySelectorAll('[data-thread-id]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          selectedThreadId = Number(btn.dataset.threadId);
+          await loadMyMessageThreads();
+          await loadMyThreadMessages(selectedThreadId);
+        });
+      });
+    } catch (e) {
+      console.error(e);
+      showAlert('Ошибка загрузки диалогов');
+      list.innerHTML = '<div class="text-muted">Не удалось загрузить диалоги.</div>';
+      selectedThreadId = null;
+      showEmptyState();
+    }
+  }
+
+  async function loadMyThreadMessages(threadId) {
+    if (!threadId) {
+      showEmptyState();
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/messages/threads/${threadId}/messages`, {
+        headers: apiHeaders()
+      });
+
+      const json = await res.json().catch(() => ({}));
+
+      if (res.status === 401) {
+        localStorage.clear();
+        location.replace('login.html');
+        return;
+      }
+
+      if (!res.ok) {
+        showAlert(json.error || 'Ошибка загрузки сообщений');
+        showEmptyState();
+        return;
+      }
+
+      hideAlert();
+      showChatArea();
+
+      const titleEl = document.getElementById('userMessageChatTitle');
+      const metaEl = document.getElementById('userMessageChatMeta');
+      const messagesWrap = document.getElementById('userMessageMessages');
+
+      if (titleEl) {
+        titleEl.textContent = `Диалог: ${json.thread.manager_name || 'Менеджер'}`;
+      }
+
+      if (metaEl) {
+        metaEl.innerHTML = `
+          <span>${escapeHtml(json.thread.manager_email || '')}</span>
+          <span class="ms-2">Создано: ${formatDate(json.thread.created_at)}</span>
+        `;
+      }
+
+      const messages = Array.isArray(json.messages) ? json.messages : [];
+
+      if (!messages.length) {
+        messagesWrap.innerHTML = '<div class="text-muted">Сообщений пока нет.</div>';
+      } else {
+        messagesWrap.innerHTML = messages.map(msg => {
+          const fromStudent = msg.sender_role === 'student';
+
+          return `
+            <div class="support-message ${fromStudent ? 'user' : 'manager'}">
+              <div class="support-message-bubble">
+                <div class="support-message-role">
+                  ${fromStudent ? 'Вы' : 'Менеджер'}
+                </div>
+                <div class="support-message-text">${escapeHtml(msg.message_text)}</div>
+                <div class="support-message-date">${formatDate(msg.created_at)}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      messagesWrap.scrollTop = messagesWrap.scrollHeight;
+    } catch (e) {
+      console.error(e);
+      showAlert('Ошибка загрузки сообщений');
+      showEmptyState();
+    }
+  }
+
+  async function sendReply(e) {
+    e.preventDefault();
+
+    if (!selectedThreadId) {
+      showAlert('Сначала выберите диалог');
+      return;
+    }
+
+    const textEl = document.getElementById('userMessageReplyText');
+    const btn = document.getElementById('userMessageReplyBtn');
+
+    if (!textEl || !btn) return;
+
+    const messageText = textEl.value.trim();
+
+    if (!messageText) {
+      showAlert('Сообщение не должно быть пустым');
+      return;
+    }
+
+    try {
+      btn.disabled = true;
+      btn.textContent = 'Отправка...';
+
+      const res = await fetch(`/api/messages/threads/${selectedThreadId}/messages`, {
+        method: 'POST',
+        headers: apiHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ message_text: messageText })
+      });
+
+      const json = await res.json().catch(() => ({}));
+
+      if (res.status === 401) {
+        localStorage.clear();
+        location.replace('login.html');
+        return;
+      }
+
+      if (!res.ok) {
+        showAlert(json.error || 'Ошибка отправки сообщения');
+        return;
+      }
+
+      hideAlert();
+      textEl.value = '';
+
+      await loadMyThreadMessages(selectedThreadId);
+      await loadMyMessageThreads();
+    } catch (e) {
+      console.error(e);
+      showAlert('Ошибка отправки сообщения');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Отправить сообщение';
+    }
+  }
+
+  window.loadMyMessageThreads = loadMyMessageThreads;
+
+  const replyForm = document.getElementById('userMessageReplyForm');
+  if (replyForm) {
+    replyForm.addEventListener('submit', sendReply);
+  }
+
+  const refreshBtn = document.getElementById('refreshMessageThreadsBtn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', loadMyMessageThreads);
+  }
+
+  loadMyMessageThreads();
+  showEmptyState();
+});
+</script>
+
+</body>
+</html>

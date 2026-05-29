@@ -18,18 +18,18 @@
     <nav id="nav-links" class="cs-nav">
       <ul id="nav-ul" class="cs-nav-list"></ul>
     </nav>
+
     <button id="themeToggleBtn" class="btn btn-sm btn-outline-secondary" type="button">
-  🌙 Тёмная
-</button>
+      🌙 Тёмная
+    </button>
   </div>
 </header>
 
 <main class="container py-5 flex-grow-1">
-
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <div>
       <h1 class="h3 mb-1">Кабинет менеджера</h1>
-      <div class="text-muted">Управление записями на курсы, контактами пользователей и обращениями</div>
+      <div class="text-muted">Управление записями на курсы, курсами, отзывами, контактами пользователей и личными сообщениями</div>
     </div>
 
     <div class="d-flex gap-2">
@@ -40,26 +40,132 @@
 
   <div id="managerAlert" class="alert alert-warning d-none"></div>
 
+  <section class="mb-4">
+  <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
+    <div>
+      <h2 class="h5 mb-1">Метрики</h2>
+      <div class="text-muted small">Краткая статистика по записям, оплатам и курсам</div>
+    </div>
+
+    <button class="btn btn-sm btn-outline-secondary" type="button" onclick="loadManagerMetrics()">
+      Обновить метрики
+    </button>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card cs-card p-3 h-100">
+        <div class="text-muted small mb-1">Всего записей</div>
+        <div class="h3 mb-0" id="metricTotalEnrollments">0</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card cs-card p-3 h-100">
+        <div class="text-muted small mb-1">Активные записи</div>
+        <div class="h3 mb-0" id="metricActiveEnrollments">0</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card cs-card p-3 h-100">
+        <div class="text-muted small mb-1">Оплаченные</div>
+        <div class="h3 mb-0" id="metricPaidEnrollments">0</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card cs-card p-3 h-100">
+        <div class="text-muted small mb-1">Неоплаченные</div>
+        <div class="h3 mb-0" id="metricUnpaidEnrollments">0</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card cs-card p-3 h-100">
+        <div class="text-muted small mb-1">Общая выручка</div>
+        <div class="h3 mb-0" id="metricTotalRevenue">0 ₽</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card cs-card p-3 h-100">
+        <div class="text-muted small mb-1">Выручка за месяц</div>
+        <div class="h3 mb-0" id="metricMonthRevenue">0 ₽</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card cs-card p-3 h-100">
+        <div class="text-muted small mb-1">Новые пользователи</div>
+        <div class="h3 mb-0" id="metricNewUsersMonth">0</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card cs-card p-3 h-100">
+        <div class="text-muted small mb-1">Средний рейтинг</div>
+        <div class="h3 mb-0" id="metricAvgRating">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12 col-xl-6">
+      <div class="card cs-card p-3 h-100">
+        <h3 class="h6 mb-3">Топ курсов по записям</h3>
+        <div id="topCoursesByEnrollments" class="d-flex flex-column gap-2">
+          <div class="text-muted">Загрузка...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-xl-6">
+      <div class="card cs-card p-3 h-100">
+        <h3 class="h6 mb-3">Топ курсов по выручке</h3>
+        <div id="topCoursesByRevenue" class="d-flex flex-column gap-2">
+          <div class="text-muted">Загрузка...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
   <ul class="nav nav-tabs mb-3" role="tablist">
     <li class="nav-item" role="presentation">
       <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-enrollments" type="button">
         Записи на курсы
       </button>
     </li>
+
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-courses" type="button">
+        Курсы
+      </button>
+    </li>
+
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-reviews" type="button">
+        Отзывы
+      </button>
+    </li>
+
     <li class="nav-item" role="presentation">
       <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-contacts" type="button">
         Контакты пользователей
       </button>
     </li>
+
     <li class="nav-item" role="presentation">
-      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-support" type="button">
-        Обращения
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-personal-messages" type="button">
+        Личные сообщения
       </button>
     </li>
   </ul>
 
   <div class="tab-content">
 
+    <!-- Записи -->
     <div class="tab-pane fade show active" id="tab-enrollments" role="tabpanel">
       <div class="card cs-card p-3 p-md-4">
         <h2 class="h5 mb-3">Записи на курсы</h2>
@@ -85,6 +191,66 @@
       </div>
     </div>
 
+    <!-- Курсы -->
+    <div class="tab-pane fade" id="tab-courses" role="tabpanel">
+      <div class="card cs-card p-3 p-md-4">
+        <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
+          <h2 class="h5 m-0">Курсы</h2>
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-sm btn-outline-primary" onclick="openCourseModal()">Добавить курс</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="loadCourses()">Обновить</button>
+            <a class="btn btn-sm btn-outline-primary" href="courses.html">Открыть витрину</a>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table id="coursesTable" class="table table-striped align-middle">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Название</th>
+                <th>Категория</th>
+                <th>Цена</th>
+                <th>Опубликован</th>
+                <th>Создан</th>
+                <th style="width:180px;">Действия</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Отзывы -->
+    <div class="tab-pane fade" id="tab-reviews" role="tabpanel">
+      <div class="card cs-card p-3 p-md-4">
+        <h2 class="h5 mb-3">Отзывы</h2>
+
+        <div class="table-responsive">
+          <table id="reviewsTable" class="table table-striped align-middle">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Автор</th>
+                <th>Курс</th>
+                <th>Оценка</th>
+                <th>Комментарий</th>
+                <th>Дата</th>
+                <th style="width:120px;">Удалить</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="text-muted small mt-2">
+          Удаление отзывов доступно менеджеру.
+        </div>
+      </div>
+    </div>
+
+    <!-- Контакты -->
     <div class="tab-pane fade" id="tab-contacts" role="tabpanel">
       <div class="card cs-card p-3 p-md-4">
         <h2 class="h5 mb-3">Контактная информация пользователей</h2>
@@ -98,6 +264,7 @@
                 <th>Email</th>
                 <th>Роль</th>
                 <th>Дата регистрации</th>
+                <th style="width:160px;">Действия</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -106,60 +273,58 @@
       </div>
     </div>
 
-    <div class="tab-pane fade" id="tab-support" role="tabpanel">
+    <!-- Личные сообщения -->
+    <div class="tab-pane fade" id="tab-personal-messages" role="tabpanel">
       <div class="card cs-card p-3 p-md-4">
         <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
           <div>
-            <h2 class="h5 mb-1">Обращения поддержки</h2>
-            <div class="text-muted small">Ответы пользователям и управление статусом обращений</div>
+            <h2 class="h5 mb-1">Личные сообщения</h2>
+            <div class="text-muted small">Переписка менеджера с пользователями</div>
           </div>
 
-          <div class="d-flex gap-2 flex-wrap">
-            <button class="btn btn-sm btn-outline-secondary" onclick="loadSupportThreads()">Обновить</button>
-            <button class="btn btn-sm btn-outline-primary" onclick="filterSupportThreads('open')">Только открытые</button>
-            <button class="btn btn-sm btn-outline-dark" onclick="filterSupportThreads('all')">Все</button>
-          </div>
+          <button class="btn btn-sm btn-outline-secondary" type="button" onclick="loadManagerMessageThreads()">
+            Обновить
+          </button>
         </div>
 
         <div class="row g-4">
           <div class="col-12 col-lg-4">
-            <div id="managerSupportThreadsList" class="support-threads-list">
-              <div class="text-muted">Загрузка обращений...</div>
+            <div id="managerMessageThreadsList" class="support-threads-list">
+              <div class="text-muted">Загрузка диалогов...</div>
             </div>
           </div>
 
           <div class="col-12 col-lg-8">
-            <div id="managerSupportEmptyState" class="support-empty-state">
-              <div class="support-empty-icon">💬</div>
-              <h3 class="h5 mb-2">Выберите обращение</h3>
-              <div class="text-muted">Слева появится список обращений пользователей.</div>
+            <div id="managerMessageEmptyState" class="support-empty-state">
+              <div class="support-empty-icon">📨</div>
+              <h3 class="h5 mb-2">Выберите диалог</h3>
+              <div class="text-muted">Слева появятся личные переписки с пользователями.</div>
             </div>
 
-            <div id="managerSupportChatArea" style="display:none;">
+            <div id="managerMessageChatArea" style="display:none;">
               <div class="support-chat-head mb-3">
                 <div>
-                  <div class="support-chat-subject" id="managerSupportSubject">Тема обращения</div>
-                  <div class="support-chat-meta text-muted small" id="managerSupportMeta">Информация об обращении</div>
-                </div>
-
-                <div class="d-flex gap-2 flex-wrap">
-                  <button class="btn btn-sm btn-outline-success" id="managerOpenThreadBtn" type="button">Открыть</button>
-                  <button class="btn btn-sm btn-outline-danger" id="managerCloseThreadBtn" type="button">Закрыть</button>
+                  <div class="support-chat-subject" id="managerMessageChatTitle">Диалог с пользователем</div>
+                  <div class="support-chat-meta text-muted small" id="managerMessageChatMeta">
+                    Информация о пользователе
+                  </div>
                 </div>
               </div>
 
-              <div id="managerSupportMessages" class="support-messages mb-3"></div>
+              <div id="managerMessageMessages" class="support-messages mb-3"></div>
 
-              <form id="managerSupportReplyForm" class="d-flex flex-column gap-3">
+              <form id="managerMessageReplyForm" class="d-flex flex-column gap-3">
                 <textarea
-                  id="managerSupportReplyText"
+                  id="managerMessageReplyText"
                   class="form-control"
                   rows="4"
-                  placeholder="Введите ответ пользователю..."
+                  placeholder="Введите сообщение пользователю..."
                 ></textarea>
 
                 <div class="d-flex justify-content-end">
-                  <button class="btn btn-primary" id="managerSendReplyBtn" type="submit">Отправить ответ</button>
+                  <button id="managerMessageReplyBtn" class="btn btn-primary" type="submit">
+                    Отправить сообщение
+                  </button>
                 </div>
               </form>
             </div>
@@ -170,6 +335,68 @@
 
   </div>
 </main>
+
+<!-- Modal курса -->
+<div class="modal fade" id="courseModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form id="courseForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="courseModalTitle">Курс</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" id="course_id">
+
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Название</label>
+              <input class="form-control" id="title" required>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Описание</label>
+              <textarea class="form-control" id="description" rows="3" required></textarea>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Цена</label>
+              <input class="form-control" id="price" type="number" step="0.01" required>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Длительность (мес.)</label>
+              <input class="form-control" id="duration_months" type="number" min="1" value="3">
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Категория</label>
+              <select class="form-select" id="category_id" required></select>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Ссылка на картинку (image_url)</label>
+              <input class="form-control" id="image_url" placeholder="/img/courses/xxx.jpg или https://...">
+            </div>
+
+            <div class="col-12">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="is_published" checked>
+                <label class="form-check-label" for="is_published">Опубликован</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Отмена</button>
+          <button class="btn btn-primary" type="submit">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <script src="/js/nav.js" defer></script>
 <div id="footer-holder"></div>
@@ -184,6 +411,13 @@
   const role = localStorage.getItem('role');
   if (role !== 'manager') location.href = 'login.html';
 
+  let dtEnrollments = null;
+  let dtContacts = null;
+  let dtCourses = null;
+  let dtReviews = null;
+  let courseModal = null;
+  let selectedManagerMessageThreadId = null;
+
   function goHome() {
     location.href = 'index.html';
   }
@@ -195,18 +429,21 @@
 
   function showAlert(msg) {
     const el = document.getElementById('managerAlert');
+    if (!el) return;
     el.textContent = msg;
     el.classList.remove('d-none');
   }
 
   function hideAlert() {
-    document.getElementById('managerAlert').classList.add('d-none');
+    const el = document.getElementById('managerAlert');
+    if (!el) return;
+    el.classList.add('d-none');
   }
 
   function apiHeaders(extra = {}) {
     const token = localStorage.getItem('token');
     return {
-      ...(token ? { 'Authorization': 'Bearer ' + token } : {}),
+      ...(token ? { Authorization: 'Bearer ' + token } : {}),
       'x-role': role,
       ...extra
     };
@@ -222,22 +459,12 @@
     return map[String(status || '').toLowerCase()] || status;
   }
 
-  function translatePaymentStatus(status) {
-    const map = {
-      paid: 'Оплачено',
-      unpaid: 'Не оплачено',
-      canceled: 'Отменено',
-      cancelled: 'Отменено',
-      pending: 'Ожидает оплаты'
-    };
-    return map[String(status || '').toLowerCase()] || status;
-  }
-
   function translateRole(roleValue) {
     const map = {
       student: 'Студент',
       manager: 'Менеджер',
-      admin: 'Администратор'
+      admin: 'Администратор',
+      support: 'Поддержка'
     };
     return map[String(roleValue || '').toLowerCase()] || roleValue;
   }
@@ -277,42 +504,11 @@
     return jQuery(tableId).DataTable(options);
   }
 
-  function showSupportEmptyState() {
-    const empty = document.getElementById('managerSupportEmptyState');
-    const chat = document.getElementById('managerSupportChatArea');
-
-    if (empty) empty.style.display = 'flex';
-    if (chat) chat.style.display = 'none';
-  }
-
-  function showSupportChatArea() {
-    const empty = document.getElementById('managerSupportEmptyState');
-    const chat = document.getElementById('managerSupportChatArea');
-
-    if (empty) empty.style.display = 'none';
-    if (chat) chat.style.display = 'block';
-  }
-
-  function supportStatusBadge(status) {
-    if (status === 'closed') {
-      return '<span class="badge rounded-pill text-bg-secondary">Закрыто</span>';
-    }
-    return '<span class="badge rounded-pill text-bg-success">Открыто</span>';
-  }
-
-  function filterSupportThreads(mode) {
-    supportFilter = mode;
-    loadSupportThreads();
-  }
-
-  let dtEnrollments = null;
-  let dtContacts = null;
-  let selectedSupportThreadId = null;
-  let supportFilter = 'open';
-
   async function loadEnrollments() {
     const data = await apiGetArray('/api/manager/enrollments');
     const tbody = document.querySelector('#enrollmentsTable tbody');
+    if (!tbody) return;
+
     tbody.innerHTML = '';
 
     data.forEach(e => {
@@ -368,9 +564,13 @@
   async function loadContacts() {
     const data = await apiGetArray('/api/manager/contacts');
     const tbody = document.querySelector('#contactsTable tbody');
+    if (!tbody) return;
+
     tbody.innerHTML = '';
 
     data.forEach(u => {
+      const canMessage = String(u.role || '').toLowerCase() === 'student';
+
       tbody.insertAdjacentHTML('beforeend', `
         <tr>
           <td>${u.user_id}</td>
@@ -378,6 +578,13 @@
           <td>${escapeHtml(u.email)}</td>
           <td>${translateRole(u.role)}</td>
           <td>${new Date(u.created_at).toLocaleString()}</td>
+          <td>
+            ${
+              canMessage
+                ? `<button class="btn btn-sm btn-outline-primary" onclick="openMessageThreadByStudentId(${u.user_id})">Написать</button>`
+                : `<span class="text-muted small">—</span>`
+            }
+          </td>
         </tr>
       `);
     });
@@ -420,14 +627,208 @@
     loadEnrollments();
   }
 
-  async function loadSupportThreads() {
-    const list = document.getElementById('managerSupportThreadsList');
+  async function loadCategoriesToSelect(selectedId = null) {
+    const res = await fetch('/api/manager/categories', { headers: apiHeaders() });
+    const json = await res.json().catch(() => []);
+
+    if (!res.ok) {
+      showAlert(json.error || 'Ошибка категорий');
+      return;
+    }
+
+    const sel = document.getElementById('category_id');
+    if (!sel) return;
+
+    sel.innerHTML = (json || []).map(c =>
+      `<option value="${c.category_id}">${escapeHtml(c.name)}</option>`
+    ).join('');
+
+    if (selectedId) sel.value = String(selectedId);
+  }
+
+  async function openCourseModal(course = null) {
+    const modalEl = document.getElementById('courseModal');
+    if (!modalEl) return;
+
+    if (!courseModal) courseModal = new bootstrap.Modal(modalEl);
+
+    document.getElementById('course_id').value = course?.course_id ?? '';
+    document.getElementById('title').value = course?.title ?? '';
+    document.getElementById('description').value = course?.description ?? '';
+    document.getElementById('price').value = course?.price ?? '';
+    document.getElementById('duration_months').value = course?.duration_months ?? 3;
+    document.getElementById('image_url').value = course?.image_url ?? '';
+    document.getElementById('is_published').checked = !!(course?.is_published ?? true);
+
+    document.getElementById('courseModalTitle').textContent =
+      course ? `Редактирование курса #${course.course_id}` : 'Добавить курс';
+
+    await loadCategoriesToSelect(course?.category_id ?? null);
+    courseModal.show();
+  }
+
+  function editCourse(encodedJson) {
+    const course = JSON.parse(decodeURIComponent(encodedJson));
+    openCourseModal(course);
+  }
+
+  async function deleteCourse(id) {
+    if (!confirm('Удалить курс?')) return;
+
+    const res = await fetch('/api/manager/courses/' + id, {
+      method: 'DELETE',
+      headers: apiHeaders()
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      showAlert(json.error || 'Ошибка удаления курса');
+      return;
+    }
+
+    loadCourses();
+  }
+
+  async function deleteReview(id) {
+    if (!confirm('Удалить отзыв?')) return;
+
+    const res = await fetch('/api/manager/reviews/' + id, {
+      method: 'DELETE',
+      headers: apiHeaders()
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      showAlert(json.error || 'Ошибка удаления отзыва');
+      return;
+    }
+
+    loadReviews();
+  }
+
+  async function loadCourses() {
+    const data = await apiGetArray('/api/manager/courses');
+    const tbody = document.querySelector('#coursesTable tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    data.forEach(c => {
+      const safeJson = encodeURIComponent(JSON.stringify(c));
+
+      tbody.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td>${c.course_id}</td>
+          <td>${escapeHtml(c.title)}</td>
+          <td>${escapeHtml(c.category_name || 'Без категории')}</td>
+          <td>${Number(c.price).toLocaleString('ru-RU')} ₽</td>
+          <td>${c.is_published ? 'Да' : 'Нет'}</td>
+          <td>${new Date(c.created_at).toLocaleDateString()}</td>
+          <td>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-primary" onclick="editCourse('${safeJson}')">Редакт.</button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteCourse(${c.course_id})">Удалить</button>
+            </div>
+          </td>
+        </tr>
+      `);
+    });
+
+    dtCourses = initDataTable('#coursesTable', dtCourses, {
+      order: [[0, 'asc']],
+      pageLength: 10
+    });
+  }
+
+  async function loadReviews() {
+    const data = await apiGetArray('/api/manager/reviews');
+    const tbody = document.querySelector('#reviewsTable tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    data.forEach(r => {
+      const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+
+      tbody.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td>${r.review_id}</td>
+          <td>${escapeHtml(r.full_name)}</td>
+          <td>${escapeHtml(r.course_title)}</td>
+          <td class="text-warning" style="letter-spacing:.5px;">${stars}</td>
+          <td>${escapeHtml((r.comment || '').slice(0, 120))}${(r.comment && r.comment.length > 120) ? '…' : ''}</td>
+          <td>${new Date(r.created_at).toLocaleString()}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteReview(${r.review_id})">Удалить</button>
+          </td>
+        </tr>
+      `);
+    });
+
+    dtReviews = initDataTable('#reviewsTable', dtReviews, {
+      order: [[0, 'desc']],
+      pageLength: 10
+    });
+  }
+
+  function showManagerMessageEmptyState() {
+    const empty = document.getElementById('managerMessageEmptyState');
+    const chat = document.getElementById('managerMessageChatArea');
+    if (empty) empty.style.display = 'flex';
+    if (chat) chat.style.display = 'none';
+  }
+
+  function showManagerMessageChatArea() {
+    const empty = document.getElementById('managerMessageEmptyState');
+    const chat = document.getElementById('managerMessageChatArea');
+    if (empty) empty.style.display = 'none';
+    if (chat) chat.style.display = 'block';
+  }
+
+  async function openMessageThreadByStudentId(studentId) {
+    const res = await fetch('/api/manager/messages/threads', {
+      method: 'POST',
+      headers: apiHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ student_id: studentId })
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (res.status === 401) {
+      showAlert('Сессия истекла. Войдите заново.');
+      localStorage.clear();
+      location.href = 'login.html';
+      return;
+    }
+
+    if (!res.ok) {
+      showAlert(json.error || 'Ошибка создания диалога');
+      return;
+    }
+
+    selectedManagerMessageThreadId = json.thread?.thread_id || null;
+
+    const tabBtn = document.querySelector('[data-bs-target="#tab-personal-messages"]');
+    if (tabBtn && window.bootstrap) {
+      bootstrap.Tab.getOrCreateInstance(tabBtn).show();
+    }
+
+    await loadManagerMessageThreads();
+
+    if (selectedManagerMessageThreadId) {
+      await loadManagerThreadMessages(selectedManagerMessageThreadId);
+    }
+  }
+
+  async function loadManagerMessageThreads() {
+    const list = document.getElementById('managerMessageThreadsList');
     if (!list) return;
 
-    list.innerHTML = '<div class="text-muted">Загрузка обращений...</div>';
+    list.innerHTML = '<div class="text-muted">Загрузка диалогов...</div>';
 
-    const query = supportFilter === 'open' ? '?status=open' : '';
-    const res = await fetch('/api/manager/support/threads' + query, {
+    const res = await fetch('/api/manager/messages/threads', {
       headers: apiHeaders()
     });
 
@@ -441,39 +842,34 @@
     }
 
     if (!res.ok) {
-      showAlert(json.error || 'Ошибка загрузки обращений');
-      list.innerHTML = '<div class="text-muted">Не удалось загрузить обращения.</div>';
+      showAlert(json.error || 'Ошибка загрузки диалогов');
+      list.innerHTML = '<div class="text-muted">Не удалось загрузить диалоги.</div>';
       return;
     }
 
     hideAlert();
 
     if (!Array.isArray(json) || !json.length) {
-      list.innerHTML = '<div class="text-muted">Обращений пока нет.</div>';
-      showSupportEmptyState();
+      list.innerHTML = '<div class="text-muted">Диалогов пока нет.</div>';
+      showManagerMessageEmptyState();
       return;
     }
 
     list.innerHTML = json.map(thread => `
       <button
-        class="support-thread-item ${selectedSupportThreadId === thread.thread_id ? 'active' : ''}"
+        class="support-thread-item ${selectedManagerMessageThreadId === thread.thread_id ? 'active' : ''}"
         data-thread-id="${thread.thread_id}"
         type="button"
       >
         <div class="d-flex justify-content-between align-items-start gap-2">
-          <div class="support-thread-subject">${escapeHtml(thread.subject)}</div>
+          <div class="support-thread-subject">${escapeHtml(thread.full_name)}</div>
           ${thread.unread_count > 0 ? `<span class="badge text-bg-primary rounded-pill">${thread.unread_count}</span>` : ''}
         </div>
 
-        <div class="small mt-2"><b>${escapeHtml(thread.full_name)}</b></div>
-        <div class="small text-muted">${escapeHtml(thread.email)}</div>
-
-        <div class="mt-2">
-          ${supportStatusBadge(thread.status)}
-        </div>
+        <div class="small text-muted mt-1">${escapeHtml(thread.email)}</div>
 
         <div class="support-thread-last mt-2">
-          ${escapeHtml(thread.last_message || 'Без сообщений')}
+          ${escapeHtml(thread.last_message || 'Сообщений пока нет')}
         </div>
 
         <div class="support-thread-date mt-2">
@@ -483,21 +879,21 @@
     `).join('');
 
     list.querySelectorAll('[data-thread-id]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        selectedSupportThreadId = Number(btn.dataset.threadId);
-        loadSupportThreads();
-        loadSupportMessages(selectedSupportThreadId);
+      btn.addEventListener('click', async () => {
+        selectedManagerMessageThreadId = Number(btn.dataset.threadId);
+        await loadManagerMessageThreads();
+        await loadManagerThreadMessages(selectedManagerMessageThreadId);
       });
     });
   }
 
-  async function loadSupportMessages(threadId) {
+  async function loadManagerThreadMessages(threadId) {
     if (!threadId) {
-      showSupportEmptyState();
+      showManagerMessageEmptyState();
       return;
     }
 
-    const res = await fetch(`/api/manager/support/threads/${threadId}/messages`, {
+    const res = await fetch(`/api/manager/messages/threads/${threadId}/messages`, {
       headers: apiHeaders()
     });
 
@@ -516,35 +912,22 @@
     }
 
     hideAlert();
-    showSupportChatArea();
+    showManagerMessageChatArea();
 
-    const subjectEl = document.getElementById('managerSupportSubject');
-    const metaEl = document.getElementById('managerSupportMeta');
-    const messagesWrap = document.getElementById('managerSupportMessages');
-    const replyText = document.getElementById('managerSupportReplyText');
-    const sendBtn = document.getElementById('managerSendReplyBtn');
-    const openBtn = document.getElementById('managerOpenThreadBtn');
-    const closeBtn = document.getElementById('managerCloseThreadBtn');
+    const titleEl = document.getElementById('managerMessageChatTitle');
+    const metaEl = document.getElementById('managerMessageChatMeta');
+    const messagesWrap = document.getElementById('managerMessageMessages');
 
-    if (subjectEl) subjectEl.textContent = json.thread.subject;
+    if (titleEl) {
+      titleEl.textContent = `Диалог: ${json.thread.full_name}`;
+    }
+
     if (metaEl) {
       metaEl.innerHTML = `
-        ${supportStatusBadge(json.thread.status)}
-        <span class="ms-2"><b>${escapeHtml(json.thread.full_name)}</b> — ${escapeHtml(json.thread.email)}</span>
+        <span>${escapeHtml(json.thread.email)}</span>
         <span class="ms-2">Создано: ${new Date(json.thread.created_at).toLocaleString()}</span>
       `;
     }
-
-    if (replyText) {
-      replyText.disabled = json.thread.status === 'closed';
-      replyText.placeholder = json.thread.status === 'closed'
-        ? 'Обращение закрыто'
-        : 'Введите ответ пользователю...';
-    }
-
-    if (sendBtn) sendBtn.disabled = json.thread.status === 'closed';
-    if (openBtn) openBtn.disabled = json.thread.status === 'open';
-    if (closeBtn) closeBtn.disabled = json.thread.status === 'closed';
 
     const messages = Array.isArray(json.messages) ? json.messages : [];
 
@@ -552,12 +935,13 @@
       messagesWrap.innerHTML = '<div class="text-muted">Сообщений пока нет.</div>';
     } else {
       messagesWrap.innerHTML = messages.map(msg => {
-        const isUser = msg.sender_role === 'student';
+        const fromManager = msg.sender_role === 'manager';
+
         return `
-          <div class="support-message ${isUser ? 'manager' : 'user'}">
+          <div class="support-message ${fromManager ? 'user' : 'manager'}">
             <div class="support-message-bubble">
               <div class="support-message-role">
-                ${isUser ? 'Пользователь' : 'Менеджер'}
+                ${fromManager ? 'Менеджер' : 'Пользователь'}
               </div>
               <div class="support-message-text">${escapeHtml(msg.message_text)}</div>
               <div class="support-message-date">${new Date(msg.created_at).toLocaleString()}</div>
@@ -570,16 +954,18 @@
     messagesWrap.scrollTop = messagesWrap.scrollHeight;
   }
 
-  async function sendSupportReply(e) {
+  async function sendManagerMessageReply(e) {
     e.preventDefault();
 
-    if (!selectedSupportThreadId) {
-      showAlert('Сначала выберите обращение');
+    if (!selectedManagerMessageThreadId) {
+      showAlert('Сначала выберите диалог');
       return;
     }
 
-    const textEl = document.getElementById('managerSupportReplyText');
-    const sendBtn = document.getElementById('managerSendReplyBtn');
+    const textEl = document.getElementById('managerMessageReplyText');
+    const btn = document.getElementById('managerMessageReplyBtn');
+    if (!textEl || !btn) return;
+
     const messageText = textEl.value.trim();
 
     if (!messageText) {
@@ -587,81 +973,176 @@
       return;
     }
 
-    const res = await fetch(`/api/manager/support/threads/${selectedSupportThreadId}/messages`, {
-      method: 'POST',
+    btn.disabled = true;
+    btn.textContent = 'Отправка...';
+
+    try {
+      const res = await fetch(`/api/manager/messages/threads/${selectedManagerMessageThreadId}/messages`, {
+        method: 'POST',
+        headers: apiHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ message_text: messageText })
+      });
+
+      const json = await res.json().catch(() => ({}));
+
+      if (res.status === 401) {
+        showAlert('Сессия истекла. Войдите заново.');
+        localStorage.clear();
+        location.href = 'login.html';
+        return;
+      }
+
+      if (!res.ok) {
+        showAlert(json.error || 'Ошибка отправки сообщения');
+        return;
+      }
+
+      textEl.value = '';
+      await loadManagerThreadMessages(selectedManagerMessageThreadId);
+      await loadManagerMessageThreads();
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Отправить сообщение';
+    }
+  }
+
+  document.getElementById('courseForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const id = document.getElementById('course_id').value;
+
+    const body = {
+      title: document.getElementById('title').value.trim(),
+      description: document.getElementById('description').value.trim(),
+      price: Number(document.getElementById('price').value),
+      duration_months: Number(document.getElementById('duration_months').value || 3),
+      image_url: document.getElementById('image_url').value.trim() || null,
+      category_id: Number(document.getElementById('category_id').value),
+      is_published: document.getElementById('is_published').checked
+    };
+
+    const url = id ? `/api/manager/courses/${id}` : '/api/manager/courses';
+    const method = id ? 'PATCH' : 'POST';
+
+    const res = await fetch(url, {
+      method,
       headers: apiHeaders({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ message_text: messageText })
+      body: JSON.stringify(body)
     });
 
     const json = await res.json().catch(() => ({}));
 
-    if (res.status === 401) {
-      showAlert('Сессия истекла. Войдите заново.');
-      localStorage.clear();
-      location.href = 'login.html';
-      return;
-    }
-
     if (!res.ok) {
-      showAlert(json.error || 'Ошибка отправки ответа');
+      showAlert(json.error || 'Ошибка сохранения курса');
       return;
     }
 
-    textEl.value = '';
-    await loadSupportMessages(selectedSupportThreadId);
-    await loadSupportThreads();
-  }
+    courseModal?.hide();
+    loadCourses();
+  });
 
-  async function setSupportThreadStatus(status) {
-    if (!selectedSupportThreadId) return;
-
-    const res = await fetch(`/api/manager/support/threads/${selectedSupportThreadId}/status`, {
-      method: 'PATCH',
-      headers: apiHeaders({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ status })
-    });
-
-    const json = await res.json().catch(() => ({}));
-
-    if (res.status === 401) {
-      showAlert('Сессия истекла. Войдите заново.');
-      localStorage.clear();
-      location.href = 'login.html';
-      return;
-    }
-
-    if (!res.ok) {
-      showAlert(json.error || 'Ошибка изменения статуса');
-      return;
-    }
-
-    await loadSupportMessages(selectedSupportThreadId);
-    await loadSupportThreads();
-  }
+  window.goHome = goHome;
+  window.logout = logout;
+  window.openCourseModal = openCourseModal;
+  window.editCourse = editCourse;
+  window.deleteCourse = deleteCourse;
+  window.deleteReview = deleteReview;
+  window.loadCourses = loadCourses;
+  window.setEnrollmentStatus = setEnrollmentStatus;
+  window.setPaymentStatus = setPaymentStatus;
+  window.openMessageThreadByStudentId = openMessageThreadByStudentId;
+  window.loadManagerMessageThreads = loadManagerMessageThreads;
+  window.loadManagerMetrics = loadManagerMetrics;
 
   window.addEventListener('load', () => {
+    loadManagerMetrics();
     loadEnrollments();
+    loadCourses();
+    loadReviews();
     loadContacts();
+    loadManagerMessageThreads();
+    showManagerMessageEmptyState();
 
-    loadSupportThreads();
-    showSupportEmptyState();
-
-    const replyForm = document.getElementById('managerSupportReplyForm');
-    if (replyForm) {
-      replyForm.addEventListener('submit', sendSupportReply);
-    }
-
-    const closeBtn = document.getElementById('managerCloseThreadBtn');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => setSupportThreadStatus('closed'));
-    }
-
-    const openBtn = document.getElementById('managerOpenThreadBtn');
-    if (openBtn) {
-      openBtn.addEventListener('click', () => setSupportThreadStatus('open'));
+    const managerMessageReplyForm = document.getElementById('managerMessageReplyForm');
+    if (managerMessageReplyForm) {
+      managerMessageReplyForm.addEventListener('submit', sendManagerMessageReply);
     }
   });
+
+  function formatMoney(value) {
+  return `${Number(value || 0).toLocaleString('ru-RU')} ₽`;
+}
+
+function renderMetricList(items, mode = 'enrollments') {
+  if (!Array.isArray(items) || !items.length) {
+    return `<div class="text-muted">Данных пока нет.</div>`;
+  }
+
+  return items.map((item, index) => {
+    const rightText =
+      mode === 'revenue'
+        ? `${Number(item.revenue || 0).toLocaleString('ru-RU')} ₽`
+        : `${Number(item.enrollments_count || 0).toLocaleString('ru-RU')}`;
+
+    return `
+      <div class="d-flex justify-content-between align-items-center gap-3 border rounded-4 px-3 py-2">
+        <div class="d-flex align-items-center gap-3">
+          <span class="badge text-bg-primary rounded-pill">${index + 1}</span>
+          <span>${escapeHtml(item.title || 'Без названия')}</span>
+        </div>
+        <strong>${rightText}</strong>
+      </div>
+    `;
+  }).join('');
+}
+
+async function loadManagerMetrics() {
+  const res = await fetch('/api/manager/metrics', {
+    headers: apiHeaders()
+  });
+
+  const json = await res.json().catch(() => ({}));
+
+  if (res.status === 401) {
+    showAlert(json.error || 'Сессия истекла. Войдите заново.');
+    localStorage.clear();
+    location.href = 'login.html';
+    return;
+  }
+
+  if (!res.ok) {
+    showAlert(json.error || 'Ошибка загрузки метрик');
+    return;
+  }
+
+  hideAlert();
+
+  const setMetric = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+
+  setMetric('metricTotalEnrollments', Number(json.total_enrollments || 0).toLocaleString('ru-RU'));
+  setMetric('metricActiveEnrollments', Number(json.active_enrollments || 0).toLocaleString('ru-RU'));
+  setMetric('metricPaidEnrollments', Number(json.paid_enrollments || 0).toLocaleString('ru-RU'));
+  setMetric('metricUnpaidEnrollments', Number(json.unpaid_enrollments || 0).toLocaleString('ru-RU'));
+  setMetric('metricTotalRevenue', formatMoney(json.total_revenue || 0));
+  setMetric('metricMonthRevenue', formatMoney(json.month_revenue || 0));
+  setMetric('metricNewUsersMonth', Number(json.new_users_month || 0).toLocaleString('ru-RU'));
+  setMetric('metricAvgRating', Number(json.avg_rating || 0).toLocaleString('ru-RU'));
+
+  const topEnrollmentsEl = document.getElementById('topCoursesByEnrollments');
+  if (topEnrollmentsEl) {
+    topEnrollmentsEl.innerHTML = renderMetricList(json.top_courses_by_enrollments, 'enrollments');
+  }
+
+  const topRevenueEl = document.getElementById('topCoursesByRevenue');
+  if (topRevenueEl) {
+    topRevenueEl.innerHTML = renderMetricList(json.top_courses_by_revenue, 'revenue');
+  }
+}
 </script>
+
 <script src="/js/theme-toggle.js" defer></script>
 </body>
 </html>

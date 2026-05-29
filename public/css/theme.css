@@ -2052,3 +2052,90 @@ html[data-theme="dark"] #reviewComment {
 html[data-theme="dark"] #reviewComment::placeholder {
   color: #94a3b8 !important;
 }
+/* =========================================
+   USER SUPPORT DARK FIXES
+   вставить в самый конец theme.css
+========================================= */
+
+html[data-theme="dark"] .support-thread-item {
+  background:
+    radial-gradient(circle at top right, rgba(96, 165, 250, 0.08), transparent 18%),
+    linear-gradient(180deg, rgba(17,24,39,0.98) 0%, rgba(23,32,51,0.98) 100%) !important;
+  border: 1px solid rgba(96, 165, 250, 0.12) !important;
+  box-shadow:
+    0 14px 30px rgba(0,0,0,0.24),
+    inset 0 1px 0 rgba(255,255,255,0.03) !important;
+}
+
+html[data-theme="dark"] .support-thread-subject {
+  color: #f8fafc !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="dark"] .support-thread-last {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .support-thread-date {
+  color: #94a3b8 !important;
+}
+
+html[data-theme="dark"] .support-chat-subject {
+  color: #f8fafc !important;
+}
+
+html[data-theme="dark"] .support-chat-meta,
+html[data-theme="dark"] .support-chat-meta span,
+html[data-theme="dark"] .support-empty-state,
+html[data-theme="dark"] .support-empty-state .text-muted {
+  color: #94a3b8 !important;
+}
+
+html[data-theme="dark"] #userSupportReplyText,
+html[data-theme="dark"] #userSupportReplyText:focus,
+html[data-theme="dark"] #userSupportReplyText:disabled,
+html[data-theme="dark"] #managerSupportReplyText,
+html[data-theme="dark"] #managerSupportReplyText:focus,
+html[data-theme="dark"] #managerSupportReplyText:disabled,
+html[data-theme="dark"] #supportReplyText,
+html[data-theme="dark"] #supportReplyText:focus,
+html[data-theme="dark"] #supportReplyText:disabled {
+  background: #172033 !important;
+  color: #e5e7eb !important;
+  border: 1px solid #334155 !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #e5e7eb !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] #userSupportReplyText::placeholder,
+html[data-theme="dark"] #managerSupportReplyText::placeholder,
+html[data-theme="dark"] #supportReplyText::placeholder {
+  color: #94a3b8 !important;
+}
+
+html[data-theme="dark"] textarea:disabled,
+html[data-theme="dark"] input:disabled,
+html[data-theme="dark"] .form-control:disabled {
+  background: #172033 !important;
+  color: #94a3b8 !important;
+  border-color: #334155 !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #94a3b8 !important;
+}
+
+html[data-theme="dark"] .support-message.manager .support-message-bubble {
+  background: linear-gradient(180deg, #172033 0%, #1e293b 100%) !important;
+  color: #e5e7eb !important;
+  border: 1px solid #334155 !important;
+}
+
+html[data-theme="dark"] .support-message.user .support-message-bubble {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .support-messages {
+  border-top-color: #334155 !important;
+  border-bottom-color: #334155 !important;
+}

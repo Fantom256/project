@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Проверка оплаты | CyberSquare</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/theme.css">
+</head>
+<body class="bg-light d-flex flex-column min-vh-100">
+
+<header class="cs-header">
+  <div class="container cs-header-inner">
+    <a href="index.html" class="cs-logo">CyberSquare</a>
+
+    <nav id="nav-links" class="cs-nav">
+      <ul id="nav-ul" class="cs-nav-list"></ul>
+    </nav>
+
+    <button id="themeToggleBtn" class="btn btn-sm btn-outline-secondary" type="button">
+      🌙 Тёмная
+    </button>
+  </div>
+</header>
+
+<main class="container py-5 flex-grow-1" style="max-width: 760px;">
+  <div class="card cs-card p-4 p-md-5">
+    <h1 class="h3 mb-3">Проверяем оплату</h1>
+    <p class="text-muted mb-4" id="paymentStatusText">
+      Подождите, идёт проверка статуса платежа...
+    </p>
+
+    <div class="progress mb-4" style="height: 14px;">
+      <div id="paymentCheckBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      <button class="btn btn-primary" id="goCabinetBtn" type="button" onclick="location.href='cabinet.html'" disabled>
+        В личный кабинет
+      </button>
+      <button class="btn btn-outline-secondary" type="button" onclick="location.href='index.html'">
+        На главную
+      </button>
+    </div>
+  </div>
+</main>
+
+<script src="/js/nav.js" defer></script>
+<div id="footer-holder"></div>
+<script src="/js/footer.js" defer></script>
+<script src="/js/theme-toggle.js" defer></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const token = localStorage.getItem('token');
+  const paymentId = localStorage.getItem('pending_payment_id');
+  const statusText = document.getElementById('paymentStatusText');
+  const goCabinetBtn = document.getElementById('goCabinetBtn');
+  const bar = document.getElementById('paymentCheckBar');
+
+  function finish(message, success = false) {
+    statusText.textContent = message;
+    goCabinetBtn.disabled = false;
+
+    if (bar) {
+      bar.classList.remove('progress-bar-animated', 'progress-bar-striped');
+      bar.style.width = '100%';
+      if (success) {
+        bar.classList.add('bg-success');
+      } else {
+        bar.classList.add('bg-warning');
+      }
+    }
+  }
+
+  if (!token) {
+    location.href = 'login.html';
+    return;
+  }
+
+  if (!paymentId) {
+    finish('Не найден идентификатор платежа. Откройте личный кабинет и проверьте статус оплаты.');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/payments/check', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ payment_id: paymentId })
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (res.status === 401) {
+      localStorage.clear();
+      location.href = 'login.html';
+      return;
+    }
+
+    if (!res.ok) {
+      finish(json.error || 'Не удалось проверить статус платежа.');
+      return;
+    }
+
+    if (json.status === 'succeeded') {
+      localStorage.removeItem('pending_payment_id');
+      localStorage.removeItem('pending_enrollment_id');
+      finish('Оплата прошла успешно. Доступ к курсу открыт.', true);
+      return;
+    }
+
+    if (json.status === 'canceled') {
+      localStorage.removeItem('pending_payment_id');
+      localStorage.removeItem('pending_enrollment_id');
+      finish('Оплата была отменена.');
+      return;
+    }
+
+    finish('Платёж ещё обрабатывается. Подождите немного и проверьте кабинет снова.');
+  } catch (e) {
+    console.error(e);
+    finish('Ошибка проверки статуса платежа.');
+  }
+});
+</script>
+
+</body>
+</html>

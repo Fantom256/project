@@ -1,80 +1,150 @@
-async function reloadCabinet() {
-  const token = localStorage.getItem('token');
+function getToken() {
+  return localStorage.getItem('token');
+}
+
+function getAuthHeaders(extra = {}) {
+  const token = getToken();
+  return {
+    ...(token ? { Authorization: 'Bearer ' + token } : {}),
+    ...extra
+  };
+}
+
+async function fetchJson(url, options = {}) {
+  const res = await fetch(url, {
+    ...options,
+    headers: getAuthHeaders(options.headers || {})
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (res.status === 401) {
+    localStorage.clear();
+    location.href = 'login.html';
+    throw new Error('Сессия истекла. Войдите заново.');
+  }
+
+  if (!res.ok) {
+    throw new Error(data.error || 'Ошибка запроса');
+  }
+
+  return data;
+}
+
+async function startPayment(enrollmentId) {
+  const token = getToken();
+
   if (!token) {
     location.href = 'login.html';
     return;
   }
 
-  function translateEnrollmentStatus(status) {
-    const map = {
-      active: 'Активен',
-      completed: 'Завершён',
-      canceled: 'Отменён',
-      cancelled: 'Отменён'
-    };
-    return map[String(status || '').toLowerCase()] || status;
-  }
-
-  function translatePaymentStatus(status) {
-    const map = {
-      paid: 'Оплачено',
-      unpaid: 'Не оплачено',
-      canceled: 'Отменено',
-      cancelled: 'Отменено',
-      pending: 'Ожидает оплаты'
-    };
-    return map[String(status || '').toLowerCase()] || status;
-  }
-
-  function getEnrollmentBadgeClass(status) {
-    const value = String(status || '').toLowerCase();
-
-    if (value === 'active') return 'text-bg-success';
-    if (value === 'completed') return 'text-bg-primary';
-    if (value === 'canceled' || value === 'cancelled') return 'text-bg-danger';
-
-    return 'text-bg-secondary';
-  }
-
-  function getLessonStateBadge(state) {
-    if (state === 'completed') return 'done';
-    if (state === 'current') return 'current';
-    return '';
-  }
-
-  async function fetchJson(url) {
-    const res = await fetch(url, {
-      headers: { Authorization: 'Bearer ' + token }
+  try {
+    const res = await fetch('/api/payments/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token
+      },
+      body: JSON.stringify({ enrollment_id: enrollmentId })
     });
 
-    const data = await res.json().catch(() => ({}));
+    const json = await res.json().catch(() => ({}));
 
     if (res.status === 401) {
       localStorage.clear();
       location.href = 'login.html';
-      throw new Error('Сессия истекла. Войдите заново.');
+      return;
     }
 
     if (!res.ok) {
-      throw new Error(data.error || 'Ошибка запроса');
+      alert(json.error || 'Ошибка оплаты');
+      return;
     }
 
-    return data;
-  }
+    if (!json.confirmation_url) {
+      alert('Не получена ссылка на оплату');
+      return;
+    }
 
-  function formatDate(value) {
-    if (!value) return '—';
-    return new Date(value).toLocaleString();
-  }
+    if (json.payment_id) {
+      localStorage.setItem('pending_payment_id', json.payment_id);
+    }
+    localStorage.setItem('pending_enrollment_id', String(enrollmentId));
 
-  function formatPrice(value) {
-    const num = Number(value || 0);
-    return `${num.toFixed(2)} руб.`;
+    location.href = json.confirmation_url;
+  } catch (e) {
+    console.error(e);
+    alert('Ошибка создания платежа');
   }
+}
 
-  function setText(id, value) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = value;
+function escapeHtml(str = '') {
+  return String(str)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function formatDate(value) {
+  if (!value) return '—';
+  return new Date(value).toLocaleString();
+}
+
+function formatPrice(value) {
+  const num = Number(value || 0);
+  return `${num.toFixed(2)} руб.`;
+}
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+
+function translateEnrollmentStatus(status) {
+  const map = {
+    active: 'Активен',
+    completed: 'Завершён',
+    canceled: 'Отменён',
+    cancelled: 'Отменён'
+  };
+  return map[String(status || '').toLowerCase()] || status;
+}
+
+function translatePaymentStatus(status) {
+  const map = {
+    paid: 'Оплачено',
+    unpaid: 'Не оплачено',
+    canceled: 'Отменено',
+    cancelled: 'Отменено',
+    pending: 'Ожидает оплаты'
+  };
+  return map[String(status || '').toLowerCase()] || status;
+}
+
+function getEnrollmentBadgeClass(status) {
+  const value = String(status || '').toLowerCase();
+
+  if (value === 'active') return 'text-bg-success';
+  if (value === 'completed') return 'text-bg-primary';
+  if (value === 'canceled' || value === 'cancelled') return 'text-bg-danger';
+
+  return 'text-bg-secondary';
+}
+
+function getLessonStateBadge(state) {
+  if (state === 'completed') return 'done';
+  if (state === 'current') return 'current';
+  return '';
+}
+
+async function reloadCabinet() {
+  const token = getToken();
+  if (!token) {
+    location.href = 'login.html';
+    return;
   }
 
   const name = localStorage.getItem('full_name') || 'Пользователь';
@@ -104,12 +174,10 @@ async function reloadCabinet() {
     ).length;
     const last = total ? formatDate(safeEnrollments[0].enrolled_at) : '—';
 
-    // обычная статистика
     setText('statCourses', total);
     setText('statActive', active);
     setText('statLast', last);
 
-    // геймификация
     const level = gamification?.level ?? 1;
     const xp = gamification?.xp ?? 0;
     const streak = gamification?.streak_days ?? 0;
@@ -138,7 +206,6 @@ async function reloadCabinet() {
       setText('xpHintText', `До следующего уровня осталось ${Math.max(0, needed - current)} XP`);
     }
 
-    // достижения
     setText('achievementsCount', achievements.length);
 
     if (achievementsList) {
@@ -151,8 +218,8 @@ async function reloadCabinet() {
             <div class="cabinet-achievement-content">
               <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
                 <div>
-                  <div class="cabinet-achievement-title">${a.title}</div>
-                  <div class="cabinet-achievement-desc">${a.description || ''}</div>
+                  <div class="cabinet-achievement-title">${escapeHtml(a.title || '')}</div>
+                  <div class="cabinet-achievement-desc">${escapeHtml(a.description || '')}</div>
                 </div>
                 <span class="cabinet-achievement-xp">+${a.xp_reward || 0} XP</span>
               </div>
@@ -165,7 +232,6 @@ async function reloadCabinet() {
       }
     }
 
-    // карточки курсов
     if (!total) {
       if (emptyMsg) emptyMsg.style.display = 'block';
       if (coursesList) coursesList.innerHTML = '';
@@ -179,9 +245,8 @@ async function reloadCabinet() {
         if (row.payment_status === 'paid') {
           paymentHtml = `<span class="badge text-bg-success rounded-pill">${translatePaymentStatus(row.payment_status)}</span>`;
           learningHtml = `
-            <a href="course-view.html?course_id=${row.course_id}" 
-               class="btn btn-primary btn-sm">
-               Перейти к обучению
+            <a href="course-view.html?course_id=${row.course_id}" class="btn btn-primary btn-sm">
+              Перейти к обучению
             </a>
           `;
         } else if (row.payment_status === 'canceled' || row.payment_status === 'cancelled') {
@@ -189,10 +254,13 @@ async function reloadCabinet() {
           learningHtml = `<span class="text-muted small">Недоступно</span>`;
         } else {
           paymentHtml = `
-            <a href="payment.html?enrollment_id=${row.enrollment_id}" 
-               class="btn btn-outline-primary btn-sm">
-               Оплатить
-            </a>
+            <button
+              class="btn btn-outline-primary btn-sm"
+              type="button"
+              onclick="startPayment(${row.enrollment_id})"
+            >
+              Оплатить
+            </button>
           `;
           learningHtml = `<span class="text-muted small">Доступ после оплаты</span>`;
         }
@@ -203,8 +271,8 @@ async function reloadCabinet() {
         card.innerHTML = `
           <div class="cabinet-course-card-top">
             <div>
-              <div class="cabinet-course-title">${row.title}</div>
-              <div class="cabinet-course-category">${row.category_name || 'Без категории'}</div>
+              <div class="cabinet-course-title">${escapeHtml(row.title || '')}</div>
+              <div class="cabinet-course-category">${escapeHtml(row.category_name || 'Без категории')}</div>
             </div>
 
             <div class="cabinet-course-price">${formatPrice(row.price)}</div>
@@ -240,7 +308,6 @@ async function reloadCabinet() {
       });
     }
 
-    // прогресс по курсам
     if (courseProgressList) {
       if (!total) {
         courseProgressList.innerHTML = `<div class="text-muted">Прогресс пока недоступен.</div>`;
@@ -274,12 +341,19 @@ async function reloadCabinet() {
           courseProgressList.innerHTML = progressCards.map(course => `
             <div class="cabinet-course-progress-item">
               <div class="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
-                <div class="fw-semibold">${course.course_title}</div>
+                <div class="fw-semibold">${escapeHtml(course.course_title || '')}</div>
                 <div class="small text-muted">${course.completed_lessons} / ${course.total_lessons} уроков</div>
               </div>
 
               <div class="progress cabinet-progress mb-3">
-                <div class="progress-bar" role="progressbar" style="width: ${course.progress_percent}%;">
+                <div
+                  class="progress-bar"
+                  role="progressbar"
+                  style="width: ${course.progress_percent}%"
+                  aria-valuenow="${course.progress_percent}"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                >
                   ${course.progress_percent}%
                 </div>
               </div>
@@ -288,7 +362,7 @@ async function reloadCabinet() {
                 ${Array.isArray(course.progress_map) ? course.progress_map.map(lesson => `
                   <span
                     class="cabinet-lesson-dot ${getLessonStateBadge(lesson.state)}"
-                    title="${lesson.title}"
+                    title="${escapeHtml(lesson.title || '')}"
                   >
                     ${lesson.lesson_order}
                   </span>
@@ -333,12 +407,21 @@ async function reloadCabinet() {
         }
       }
     }
-
   } catch (e) {
     console.error(e);
     alert(e.message || 'Ошибка сети');
   }
 }
 
-document.addEventListener('DOMContentLoaded', reloadCabinet);
+document.addEventListener('DOMContentLoaded', () => {
+  const token = getToken();
+  if (!token) {
+    location.href = 'login.html';
+    return;
+  }
+
+  reloadCabinet();
+});
+
 window.reloadCabinet = reloadCabinet;
+window.startPayment = startPayment;
